@@ -7,7 +7,7 @@ Information
 ----------------------
 
 This plugin is based on OGDF 2012.07.
-I added `pragma clang diagnostic ignored "-Woverloaded-virtual"` in `FMMMLayout.h` and `ClusterGraphAttributes.h` to avoid compile error on clang (OS X).
+I added `#pragma clang diagnostic ignored "-Woverloaded-virtual"` in `FMMMLayout.h` and `ClusterGraphAttributes.h` to avoid compile error on clang (OS X).
 
 
 Supported Platform
