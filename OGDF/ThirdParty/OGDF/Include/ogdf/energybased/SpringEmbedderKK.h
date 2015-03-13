@@ -124,7 +124,20 @@ public:
 	//! Calls the layout algorithm for graph attributes \a GA
 	//! using values in eLength for distance computation.
 	//! Precondition: Graph is connected.
+#if defined(__APPLE__)
+#	pragma clang diagnostic push
+#	pragma clang diagnostic ignored "-Woverloaded-virtual"
+#elif defined(_WIN32)
+#	pragma warning( push )
+#	pragma warning( disable : 4263 )
+#	pragma warning( disable : 4264 )
+#endif
 	void call(GraphAttributes& GA, const EdgeArray<double>& eLength);
+#if defined(__APPLE__)
+#	pragma clang diagnostic pop
+#elif defined(_WIN32)
+#	pragma warning( pop )
+#endif
 
 	//! Sets the value for the stop tolerance, below which the
 	//! system is regarded stable (balanced) and the optimization stopped
