@@ -1,3 +1,6 @@
+using System;
+using System.IO;
+
 namespace UnrealBuildTool.Rules
 {
     public class LibOGDF : ModuleRules
