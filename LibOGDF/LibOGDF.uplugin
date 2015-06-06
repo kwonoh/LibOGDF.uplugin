@@ -1,0 +1,20 @@
+{
+    "FileVersion" : 3,
+    "FriendlyName" : "LibOGDF",
+    "Version" : 201207,
+    "VersionName" : "2012.07 (Sakura)",
+    "CreatedBy" : "TU Dortmund, TU Ilmenau, Monash University, Osnabrück University, University of Cologne",
+    "CreatedByURL" : "http://www.ogdf.net",
+    "EngineVersion" : "4.2.0",
+    "Description" : "OGDF is a self-contained C++ class library for the automatic layout of diagrams. OGDF offers sophisticated algorithms and data structures to use within your own applications or scientific projects. The library is available under the GNU General Public License.",
+    "Category" : "Library",
+    "EnabledByDefault" : true,
+
+    "Modules" :
+    [
+        {
+            "Name" : "LibOGDF",
+            "Type" : "Runtime"
+        }
+    ]
+}
