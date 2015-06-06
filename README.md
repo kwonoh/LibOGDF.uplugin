@@ -22,7 +22,7 @@ Installation
 ----------------------
 
 1. Copy `OGDF` folder to `Plugins` folder under your project directory.
-2. [Download precompiled binaries](https://www.dropbox.com/sh/fqf35nvwhz0ydn7/AADepHO3HAAIDlD7oYadhn1Da?dl=0) and extract it to `OGDF/ThirdParty/OGDF/Lib`.
+2. [Download precompiled binaries](https://www.dropbox.com/s/vdnd7b3wclgz3xl/OGDF-Lib.zip?dl=0) and extract it to `OGDF/ThirdParty/OGDF/Lib`.
 Check your `Lib` directory, it should looks like `OGDF/ThirdParty/OGDF/Lib/Mac`, `OGDF/ThirdParty/OGDF/Lib/Win32` and `OGDF/ThirdParty/OGDF/Lib/Win64`.
 3. Add `OGDF` under `PublicDependencyModuleNames` in your `*.Build.cs` file to include header files from your project.
 4. Add following code in `*.Target.cs` (not `*Editor.Target.cs`) of your project. It is required to package your project.
