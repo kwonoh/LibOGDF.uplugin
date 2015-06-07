@@ -1,13 +1,13 @@
 /*
- * $Revision: 2523 $
+ * $Revision: 3916 $
  *
  * last checkin:
- *   $Author: gutwenger $
- *   $Date: 2012-07-02 20:59:27 +0200 (Mon, 02 Jul 2012) $
+ *   $Author: beyer $
+ *   $Date: 2014-02-20 14:03:05 +0100 (Thu, 20 Feb 2014) $
  ***************************************************************/
 
 /** \file
- * \brief Declaration of class WeightedGraph
+ * \brief Declaration of class EdgeWeightedGraph
  *
  * \author Matthias Woste
  *
@@ -54,56 +54,51 @@ namespace ogdf {
 template<typename T>
 class EdgeWeightedGraph: public Graph {
 public:
-	EdgeWeightedGraph();
-	EdgeWeightedGraph(GraphCopy &gC);
-	virtual ~EdgeWeightedGraph();
-	edge newEdge(node v, node w, T weight);
-	node newNode();
-	T weight(edge e) const;
-	EdgeArray<T> edgeWeights() const;
+	EdgeWeightedGraph()
+	  : Graph()
+	  , m_edgeWeight(*this)
+	{
+	}
+
+	EdgeWeightedGraph(GraphCopy &gC)
+	{
+	}
+
+	virtual ~EdgeWeightedGraph()
+	{
+	}
+
+	edge newEdge(node v, node w, T weight)
+	{
+		edge e = Graph::newEdge(v, w);
+		m_edgeWeight[e] = weight;
+		return e;
+	}
+
+	node newNode()
+	{
+		node u = Graph::newNode();
+		return u;
+	}
+
+	T weight(const edge e) const
+	{
+		return m_edgeWeight[e];
+	}
+
+	const EdgeArray<T> &edgeWeights() const
+	{
+		return m_edgeWeight;
+	}
+
+	void setWeight(const edge e, T weight)
+	{
+		m_edgeWeight[e] = weight;
+	}
 
 protected:
 	EdgeArray<T> m_edgeWeight;
 };
-
-}
-
-//Implementation
-
-namespace ogdf {
-
-template<typename T>
-EdgeWeightedGraph<T>::EdgeWeightedGraph() :
-		Graph() {
-	m_edgeWeight = EdgeArray<T>(*this);
-}
-
-template<typename T>
-EdgeWeightedGraph<T>::~EdgeWeightedGraph() {
-}
-
-template<typename T>
-edge EdgeWeightedGraph<T>::newEdge(node v, node w, T weight) {
-	edge e = Graph::newEdge(v, w);
-	m_edgeWeight[e] = weight;
-	return e;
-}
-
-template<typename T>
-node EdgeWeightedGraph<T>::newNode() {
-	node u = Graph::newNode();
-	return u;
-}
-
-template<typename T>
-T EdgeWeightedGraph<T>::weight(edge e) const {
-	return m_edgeWeight[e];
-}
-
-template<typename T>
-EdgeArray<T> EdgeWeightedGraph<T>::edgeWeights() const {
-	return m_edgeWeight;
-}
 
 }
 

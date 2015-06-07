@@ -1,9 +1,9 @@
 /*
- * $Revision: 2523 $
+ * $Revision: 3419 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-02 20:59:27 +0200 (Mon, 02 Jul 2012) $
+ *   $Date: 2013-04-18 14:17:14 +0200 (Thu, 18 Apr 2013) $
  ***************************************************************/
 
 /** \file
@@ -50,22 +50,24 @@
 #include <ogdf/basic/ArrayBuffer.h>
 #include <ogdf/planarity/BoyerMyrvold.h>
 
-#include <abacus/sub.h>
+#include <ogdf/abacus/sub.h>
+#include <ogdf/abacus/standardpool.h>
+
 
 namespace ogdf {
 
-class Sub : public ABA_SUB {
+class MaxCPlanarSub : public abacus::Sub {
 
 public:
 
-	Sub(ABA_MASTER *master);
-	Sub(ABA_MASTER *master, ABA_SUB *father, ABA_BRANCHRULE *branchRule, List<ABA_CONSTRAINT*>& criticalConstraints);
+	MaxCPlanarSub(abacus::Master *master);
+	MaxCPlanarSub(abacus::Master *master, abacus::Sub *father, abacus::BranchRule *branchRule, List<abacus::Constraint*>& criticalConstraints);
 
-	virtual ~Sub();
+	virtual ~MaxCPlanarSub();
 
 	// Creation of a child-node in the Branch&Bound tree according to the
 	// branching rule \a rule
-	virtual ABA_SUB *generateSon(ABA_BRANCHRULE *rule);
+	virtual abacus::Sub *generateSon(abacus::BranchRule *rule);
 
 
 protected:
@@ -75,13 +77,13 @@ protected:
 	// i.e. Integer-feasible + satisfying all Kuratowski- and Cut-constraints.
 	virtual bool feasible();
 
-	virtual int makeFeasible() { return 0; }  // to trick ABA_SUB::solveLp...
-//	virtual int removeNonLiftableCons() { return 0; } // to trick ABA_SUB::solveLp into returning 2
+	virtual int makeFeasible() { return 0; }  // to trick Sub::solveLp...
+//	virtual int removeNonLiftableCons() { return 0; } // to trick Sub::solveLp into returning 2
 	int repair();
 
 	virtual int optimize() {
 		Logger::slout() << "OPTIMIZE BEGIN\tNode=" << this->id() << "\n";
-		int ret = ABA_SUB::optimize();
+		int ret = abacus::Sub::optimize();
 		Logger::slout() << "OPTIMIZE END\tNode=" << this->id() << " db=" << dualBound() << "\tReturn=" << (ret?"(error)":"(ok)") << "\n";
 		return ret;
 	}
@@ -97,9 +99,9 @@ protected:
 	//! i.e. the node with parent[v] == v
 	inline node getRepresentative(node v, NodeArray<node> &parent)
 	{
-    	while (v != parent[v])
-	        v = parent[v];
-    	return v;
+		while (v != parent[v])
+			v = parent[v];
+		return v;
 	}
 
 	// Todo: Think about putting this into extended_graph_alg.h to make it
@@ -120,7 +122,7 @@ protected:
 	 */
 
 	int separateReal(double minViolate);
-	int pricingReal(double minViolate);
+	//int pricingReal(double minViolate);
 
 	inline int separateRealO(double minViolate) {
 		Logger::slout() << "\tSeparate (minViolate=" << minViolate << ")..";
@@ -128,13 +130,13 @@ protected:
 		Logger::slout() << "..done: " << r << "\n";
 		return r;
 	}
-	inline int pricingRealO(double minViolate) {
-		Logger::slout() << "\tPricing (minViolate=" << minViolate << ")..";
-		int r = pricingReal(minViolate);
-		master()->m_varsPrice += r;
-		Logger::slout() << "..done: " << r << "\n";
-		return r;
-	}
+	//inline int pricingRealO(double minViolate) {
+	//	Logger::slout() << "\tPricing (minViolate=" << minViolate << ")..";
+	//	int r = pricingReal(minViolate);
+	//	master()->m_varsPrice += r;
+	//	Logger::slout() << "..done: " << r << "\n";
+	//	return r;
+	//}
 
 	virtual int separate() {
 		Logger::slout() << "\tReporting Separation: "<<((m_reportCreation>0)?m_reportCreation:0)<<"\n";
@@ -158,22 +160,22 @@ protected:
 	virtual int improve(double &primalValue);
 
 	// Two functions inherited from ABACUS and overritten to manipulate the branching behaviour.
-	virtual int selectBranchingVariableCandidates(ABA_BUFFER<int> &candidates);
+	virtual int selectBranchingVariableCandidates(ArrayBuffer<int> &candidates);
 	virtual int selectBranchingVariable(int &variable);
 
 	//! Adds the given constraints to the given pool
-	inline int addPoolCons(ABA_BUFFER<ABA_CONSTRAINT *> &cons, ABA_STANDARDPOOL<ABA_CONSTRAINT, ABA_VARIABLE> *pool)
+	inline int addPoolCons(ArrayBuffer<abacus::Constraint *> &cons, abacus::StandardPool<abacus::Constraint, abacus::Variable> *pool)
 	{
 		return (master()->useDefaultCutPool()) ? addCons(cons) : addCons(cons, pool);
 	}//addPoolCons
-	inline int separateCutPool(ABA_STANDARDPOOL<ABA_CONSTRAINT, ABA_VARIABLE> *pool, double minViolation)
+	inline int separateCutPool(abacus::StandardPool<abacus::Constraint, abacus::Variable> *pool, double minViolation)
 	{
 		return (master()->useDefaultCutPool()) ? 0 : constraintPoolSeparation(0, pool, minViolation);
 	}//separateCutPool
 
 private:
 
-	Master* master() { return (Master*)master_; }
+	MaxCPlanarMaster* master() { return (MaxCPlanarMaster*)master_; }
 
 	// A flag indicating if constraints have been found in the current separation step.
 	// Is used to check, if the primal heuristic should be run or not.
@@ -185,13 +187,13 @@ private:
 	// used for the steering in solveLp
 	int m_reportCreation;
 	bool m_sepFirst;
-	List< ABA_CONSTRAINT* > criticalSinceBranching;
-	ArrayBuffer<ABA_CONSTRAINT* > bufferedForCreation;
+	List< abacus::Constraint* > criticalSinceBranching;
+	ArrayBuffer<abacus::Constraint* > bufferedForCreation;
 	int createVariablesForBufferedConstraints();
 
-	void myAddVars(ABA_BUFFER<ABA_VARIABLE*>& b) {
-		int num = b.number();
-		ABA_BUFFER<bool> keep(master(),num);
+	void myAddVars(ArrayBuffer<abacus::Variable*>& b) {
+		int num = b.size();
+		ArrayBuffer<bool> keep(num,false);
 		for(int i=num; i-->0;)
 			keep.push(true);
 		int r = addVars(b,0,&keep);
@@ -251,25 +253,25 @@ private:
 		List<edge> &deletedEdges);
 
 	//! Adds the given constraints to the connectivity cut pool
-	inline int addCutCons(ABA_BUFFER<ABA_CONSTRAINT *> cons)
+	inline int addCutCons(ArrayBuffer<abacus::Constraint *> cons)
 	{
-		return addPoolCons(cons, ((Master*)master_)->getCutConnPool());
+		return addPoolCons(cons, ((MaxCPlanarMaster*)master_)->getCutConnPool());
 	}
 	//! Adds the given constraints to the planarity cut pool
-	inline int addKuraCons(ABA_BUFFER<ABA_CONSTRAINT *> cons)
+	inline int addKuraCons(ArrayBuffer<abacus::Constraint *> cons)
 	{
-		return addPoolCons(cons, ((Master*)master_)->getCutKuraPool());
+		return addPoolCons(cons, ((MaxCPlanarMaster*)master_)->getCutKuraPool());
 	}
 
 	//tries to regenerate connectivity cuts
 	inline int separateConnPool(double minViolation)
 	{
-		return separateCutPool(((Master*)master_)->getCutConnPool(),minViolation);
+		return separateCutPool(((MaxCPlanarMaster*)master_)->getCutConnPool(),minViolation);
 	}
 	//tries to regenerate kuratowski cuts
 	inline int separateKuraPool(double minViolation)
 	{
-		return separateCutPool(((Master*)master_)->getCutKuraPool(),minViolation);
+		return separateCutPool(((MaxCPlanarMaster*)master_)->getCutKuraPool(),minViolation);
 	}
 	/*
 	void minimumSpanningTree(

@@ -1,9 +1,9 @@
 /*
- * $Revision: 2583 $
+ * $Revision: 3504 $
  *
  * last checkin:
- *   $Author: gutwenger $
- *   $Date: 2012-07-12 01:02:21 +0200 (Do, 12. Jul 2012) $
+ *   $Author: beyer $
+ *   $Date: 2013-05-16 14:49:39 +0200 (Thu, 16 May 2013) $
  ***************************************************************/
 
 /** \file
@@ -95,6 +95,25 @@ OGDF_EXPORT void planarConnectedGraph(Graph &G, int n, int m);
  *        multi-edges.
  */
 OGDF_EXPORT void planarBiconnectedGraph(Graph &G, int n, int m, bool multiEdges = false);
+
+//! Creates a planar biconnected acyclic (embedded) DiGraph.
+/**
+ * @param G is assigned the generated graph.
+ * @param n is the number of nodes of the generated graph.
+ * @param m is the number of edges of the generated graph.
+ * @param p up to \a m * \a p edges will be reversed preversing acyclicity; default = 0.0.
+ * @param multiEdges determines if the generated graph may contain
+ *        multi-edges; default = false.
+ */
+OGDF_EXPORT void planarBiconnectedDiGraph(Graph &G, int n, int m, double p = 0, bool multiEdges = false);
+
+//! Creates a upward planar biconnected (embedded) DiGraph.
+/**
+ * @param G is assigned the generated graph.
+ * @param n is the number of nodes of the generated graph.
+ * @param m is the number of edges of the generated graph.
+ */
+OGDF_EXPORT void upwardPlanarBiconnectedDiGraph(Graph &G, int n, int m);
 
 //! Creates a planar graph, that is connected, but not biconnected.
 /*   @param n is the max. number of nodes in each biconencted component
@@ -322,7 +341,19 @@ OGDF_EXPORT void petersenGraph(Graph &G, int n, int m);
  */
 OGDF_EXPORT void randomDiGraph(Graph &G, int n, double p);
 
-
+//! Creates a random (simple, biconnected) series parallel DAG.
+/**
+ * This function creates a random series parallel biconnected DAG.
+ * Note, that the resulting graph is trivially upward planar!
+ * To use this generator for experiments, e.g. concerning upward planarity,
+ * you can fit the graph by reversing some edges with the parameter 0 < flt < 1.
+ *
+ * @param G is assigned the generated graph.
+ * @param edges is the number of edges in the generated graph.
+ * @param p   = probability of a series composition; default = 0.5
+ * @param flt = up to edges*flt edges will be reversed preversing acyclicity; default = 0.0
+ */
+OGDF_EXPORT void randomSeriesParallelDAG(Graph &G, int edges, double p = 0.5, double flt = 0.0);
 
 }
 

@@ -1,9 +1,9 @@
 /*
- * $Revision: 2528 $
+ * $Revision: 3188 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-03 23:05:08 +0200 (Tue, 03 Jul 2012) $
+ *   $Date: 2013-01-10 09:53:32 +0100 (Thu, 10 Jan 2013) $
  ***************************************************************/
 
 /** \file
@@ -62,17 +62,17 @@ namespace ogdf
 		SimDrawCreator(SimDraw &SD) : SimDrawManipulatorModule(SD) {}
 
 		//! returns SubGraphBits from edge e
-		unsigned int &SubGraphBits(edge e) { return m_GA->subGraphBits(e); }
+		__uint32 &SubGraphBits(edge e) { return m_GA->subGraphBits(e); }
 
 		//! returns SubGraphBits from edge e
-		const unsigned int &SubGraphBits(edge e) const { return m_GA->subGraphBits(e); }
+		__uint32 &SubGraphBits(edge e) const { return m_GA->subGraphBits(e); }
 
 		//! reads a Graph
 		void readGraph(const Graph &G) { *m_G = G; }
 
-		//! randomly chose edgeSubGraph value for two graphs
+		//! randomly chose edgeSubGraphs value for two graphs
 		/**
-		* Assigns random edgeSubGraph values to all edges to create
+		* Assigns random edgeSubGraphs values to all edges to create
 		* a SimDraw instance consisting of two basic graphs.
 		* Each edge in m_G has a chance of \a doubleESGProbability (in Percent)
 		* to belong to two SubGraphs.
@@ -80,9 +80,9 @@ namespace ogdf
 		*/
 		void randomESG2(int doubleESGProbability = 50);
 
-		//! randomly chose edgeSubGraph value for three graphs
+		//! randomly chose edgeSubGraphs value for three graphs
 		/**
-		* Assigns random edgeSubGraph values to all edges to create
+		* Assigns random edgeSubGraphs values to all edges to create
 		* a SimDraw instance consisting of three basic graphs.
 		* Each edge in m_G has a chance of \a doubleESGProbabilit (in Percent)
 		* to belong to two basic graphs and a chance of \a tripleESGProbability
@@ -90,19 +90,19 @@ namespace ogdf
 		*/
 		void randomESG3(int doubleESGProbability = 50, int tripleESGProbability = 25);
 
-		//! randomly chose edgeSubGraph value for graphNumber graphs
+		//! randomly chose edgeSubGraphs value for graphNumber graphs
 		/**
-		* Assigns random edgeSubGraph values to all edges to create
+		* Assigns random edgeSubGraphs values to all edges to create
 		* a SimDraw instance consisting of \a graphNumber basic graphs.
 		* Each edge has an equal chance for each SubGraphBit - value.
 		*/
 		void randomESG(int graphNumber);
 
-		//! clears edgeSubGraph value
+		//! clears edgeSubGraphs value
 		/**
 		* This method clears all SubGraph values from m_G.
 		* After this function all edges belong to no basic graph.
-		* CAUTION: All edges need to be reset their edgeSubGraph value
+		* CAUTION: All edges need to be reset their edgeSubGraphs value
 		* for maintaining consistency.
 		*/
 		void clearESG();

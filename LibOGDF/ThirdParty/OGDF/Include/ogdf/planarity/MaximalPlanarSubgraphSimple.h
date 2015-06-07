@@ -1,9 +1,9 @@
 /*
- * $Revision: 2523 $
+ * $Revision: 3188 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-02 20:59:27 +0200 (Mon, 02 Jul 2012) $
+ *   $Date: 2013-01-10 09:53:32 +0100 (Thu, 10 Jan 2013) $
  ***************************************************************/
 
 /** \file
@@ -65,10 +65,20 @@ namespace ogdf {
 class OGDF_EXPORT MaximalPlanarSubgraphSimple : public PlanarSubgraphModule
 {
 public:
-	// construction
-	MaximalPlanarSubgraphSimple() { }
-	// destruction
+	//! Creates an instance of the maximal planar subgraph simple algorithm with default settings.
+	MaximalPlanarSubgraphSimple();
+
+	//! Creates an instance of the maximal planar subgraph simple algorithm with the same settings as \a mps.
+	MaximalPlanarSubgraphSimple(const MaximalPlanarSubgraphSimple &mps);
+
+	//! Destructor
 	~MaximalPlanarSubgraphSimple() { }
+
+	//! Returns a new instance of maximal planar subgraph simple with the same option settings.
+	virtual PlanarSubgraphModule *clone() const;
+
+	//! Assignment operator. Copies option settings only.
+	MaximalPlanarSubgraphSimple &operator=(const MaximalPlanarSubgraphSimple &mps);
 
 
 protected:

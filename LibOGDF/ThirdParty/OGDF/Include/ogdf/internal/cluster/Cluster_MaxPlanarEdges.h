@@ -1,9 +1,9 @@
 /*
- * $Revision: 2523 $
+ * $Revision: 3005 $
  *
  * last checkin:
- *   $Author: gutwenger $
- *   $Date: 2012-07-02 20:59:27 +0200 (Mon, 02 Jul 2012) $
+ *   $Author: chimani $
+ *   $Date: 2012-11-12 14:19:48 +0100 (Mon, 12 Nov 2012) $
  ***************************************************************/
 
 /** \file
@@ -53,26 +53,26 @@
 #include <ogdf/internal/cluster/Cluster_EdgeVar.h>
 #include <ogdf/internal/cluster/basics.h>
 
-#include <abacus/constraint.h>
+#include <ogdf/abacus/constraint.h>
 
 namespace ogdf {
 
 
-class MaxPlanarEdgesConstraint : public ABA_CONSTRAINT {
+class MaxPlanarEdgesConstraint : public abacus::Constraint {
 #ifdef OGDF_DEBUG
-	friend class Sub;
+	friend class MaxCPlanarSub;
 	friend class CPlanarSub;
 #endif
 	public:
 		//construction
-		MaxPlanarEdgesConstraint(ABA_MASTER *master, int edgeBound, List<nodePair> &edges);
-		MaxPlanarEdgesConstraint(ABA_MASTER *master, int edgeBound);
+		MaxPlanarEdgesConstraint(abacus::Master *master, int edgeBound, List<nodePair> &edges);
+		MaxPlanarEdgesConstraint(abacus::Master *master, int edgeBound);
 
 		//destruction
 		virtual ~MaxPlanarEdgesConstraint();
 
 		//computes and returns the coefficient for the given variable
-		virtual double coeff(ABA_VARIABLE *v);
+		virtual double coeff(const abacus::Variable *v) const;
 
 	private:
 		List<nodePair> m_edges;

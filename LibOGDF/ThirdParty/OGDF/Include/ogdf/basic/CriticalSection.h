@@ -1,9 +1,9 @@
 /*
- * $Revision: 2583 $
+ * $Revision: 3840 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-12 01:02:21 +0200 (Do, 12. Jul 2012) $
+ *   $Date: 2013-11-19 08:27:44 +0100 (Tue, 19 Nov 2013) $
  ***************************************************************/
 
 /** \file
@@ -40,6 +40,9 @@
  * \see  http://www.gnu.org/copyleft/gpl.html
  ***************************************************************/
 
+// must be included first here
+#include <ogdf/basic/basic.h>
+
 
 #ifdef _MSC_VER
 #pragma once
@@ -48,6 +51,7 @@
 
 #ifndef OGDF_CRITICAL_SECTION_H
 #define OGDF_CRITICAL_SECTION_H
+
 
 #if !defined(OGDF_SYSTEM_WINDOWS)
 #include <pthread.h>
@@ -72,7 +76,11 @@ class OGDF_EXPORT CriticalSection
 public:
 	//! Creates a critical section object.
 	CriticalSection() {
+#if _WIN32_WINNT >= 0x0600
+		InitializeSRWLock(&m_srwLock);
+#else
 		InitializeCriticalSection(&m_cs);
+#endif
 	}
 
 	//! Creates a critical section object with spin count.
@@ -83,30 +91,53 @@ public:
 	 *         otherwise it makes no sense.
 	 */
 	explicit CriticalSection(int spinCount) {
+#if _WIN32_WINNT >= 0x0600
+#pragma warning( suppress : 4100 )
+		InitializeSRWLock(&m_srwLock);
+#else
 		InitializeCriticalSectionAndSpinCount(&m_cs, spinCount);
+#endif
 	}
 
 	~CriticalSection() {
+#if _WIN32_WINNT < 0x0600
 		DeleteCriticalSection(&m_cs);
+#endif
 	}
 
 	//! Enters the critical section.
 	void enter() {
+#if _WIN32_WINNT >= 0x0600
+		AcquireSRWLockExclusive(&m_srwLock);
+#else
 		EnterCriticalSection(&m_cs);
+#endif
 	}
 
 	//! Tries to enter the critical section; returns true on success.
 	bool tryEnter() {
+#if _WIN32_WINNT >= 0x0600
+		return (TryAcquireSRWLockExclusive(&m_srwLock) != 0);
+#else
 		return (TryEnterCriticalSection(&m_cs) != 0);
+#endif
 	}
 
 	//! Leaves the critical section.
 	void leave() {
+#if _WIN32_WINNT >= 0x0600
+		ReleaseSRWLockExclusive(&m_srwLock);
+#else
 		LeaveCriticalSection(&m_cs);
+#endif
 	}
 
 private:
+#if _WIN32_WINNT >= 0x0600
+	SRWLOCK m_srwLock;
+#else
 	CRITICAL_SECTION m_cs; //!< The Windows critical section object.
+#endif
 };
 
 

@@ -1,9 +1,9 @@
 /*
- * $Revision: 2523 $
+ * $Revision: 3005 $
  *
  * last checkin:
- *   $Author: gutwenger $
- *   $Date: 2012-07-02 20:59:27 +0200 (Mon, 02 Jul 2012) $
+ *   $Author: chimani $
+ *   $Date: 2012-11-12 14:19:48 +0100 (Mon, 12 Nov 2012) $
  ***************************************************************/
 
 /** \file
@@ -53,25 +53,25 @@
 #include <ogdf/internal/cluster/Cluster_EdgeVar.h>
 #include <ogdf/internal/cluster/basics.h>
 //#include <ogdf/internal/cluster/MaxCPlanar_Master.h>
-//#include <abacus/master.h>
+//#include <ogdf/abacus/master.h>
 
-#include <abacus/constraint.h>
+#include <ogdf/abacus/constraint.h>
 
 namespace ogdf {
 
 
-class KuratowskiConstraint : public ABA_CONSTRAINT {
+class ClusterKuratowskiConstraint : public abacus::Constraint {
 
 public:
 
-	KuratowskiConstraint(ABA_MASTER *master, int nEdges, SListPure<nodePair> &ks);
+	ClusterKuratowskiConstraint(abacus::Master *master, int nEdges, SListPure<nodePair> &ks);
 
-	virtual ~KuratowskiConstraint();
+	virtual ~ClusterKuratowskiConstraint();
 
 	// Computes and returns the coefficient for the given variable
-	virtual double coeff(ABA_VARIABLE *v);
+	virtual double coeff(const abacus::Variable *v) const;
 
-	void printMe(ostream& out) {
+	void printMe(ostream& out) const {
 		out << "[KuraCon: ";
 		forall_listiterators(nodePair, it, m_subdivision) {
 			(*it).printMe(out);

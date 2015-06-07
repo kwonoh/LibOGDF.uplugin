@@ -1,13 +1,13 @@
 /*
- * $Revision: 2524 $
+ * $Revision: 3261 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-03 09:54:22 +0200 (Tue, 03 Jul 2012) $
+ *   $Date: 2013-01-25 14:48:05 +0100 (Fri, 25 Jan 2013) $
  ***************************************************************/
 
 /** \file
- * \brief declaration of class FixedEmbeddingInserter
+ * \brief declaration of class FixedEmbeddingInserterOld
  *
  * \author Hoi-Ming Wong
  *
@@ -51,7 +51,7 @@
 
 #include <ogdf/module/UpwardEdgeInserterModule.h>
 #include <ogdf/basic/CombinatorialEmbedding.h>
-#include <ogdf/upward/UpwardPlanarModule.h>
+#include <ogdf/upward/UpwardPlanarity.h>
 
 
 
@@ -74,8 +74,7 @@ private:
 
 	bool isUpwardPlanar(Graph &G)
 	{
-		UpwardPlanarModule upMod;
-		return upMod.upwardPlanarityTest(G);
+		return UpwardPlanarity::isUpwardPlanar_singleSource(G);
 	}
 
 	/**

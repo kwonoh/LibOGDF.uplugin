@@ -1,9 +1,9 @@
 /*
- * $Revision: 2523 $
+ * $Revision: 2802 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-02 20:59:27 +0200 (Mon, 02 Jul 2012) $
+ *   $Date: 2012-10-11 13:55:26 +0200 (Thu, 11 Oct 2012) $
  ***************************************************************/
 
 /** \file
@@ -55,8 +55,7 @@
 
 namespace ogdf {
 
-/*!\class ScalingLayout ScalingLayout.h "ogdf/energybased/multilevelmixer/ScalingLayout.h"
- * \brief Scales a Graph relative to the ScalingType.
+/*! Scales a Graph relative to the ScalingType.
  *
  * For use with ModularMultilevelMixer.
  */

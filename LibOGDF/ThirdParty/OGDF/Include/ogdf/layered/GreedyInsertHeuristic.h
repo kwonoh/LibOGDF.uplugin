@@ -1,9 +1,9 @@
 /*
- * $Revision: 2526 $
+ * $Revision: 3833 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-03 22:32:03 +0200 (Tue, 03 Jul 2012) $
+ *   $Date: 2013-11-13 11:23:15 +0100 (Wed, 13 Nov 2013) $
  ***************************************************************/
 
 /** \file
@@ -49,7 +49,7 @@
 #define OGDF_GREEDY_INSERT_HEURISTIC_H
 
 
-#include <ogdf/module/TwoLayerCrossMin.h>
+#include <ogdf/module/LayerByLayerSweep.h>
 #include <ogdf/layered/CrossingsMatrix.h>
 #include <ogdf/basic/NodeArray.h>
 
@@ -59,11 +59,20 @@ namespace ogdf
 
 
 //! The greedy-insert heuristic for 2-layer crossing minimization.
-class OGDF_EXPORT GreedyInsertHeuristic : public TwoLayerCrossMin
+class OGDF_EXPORT GreedyInsertHeuristic : public LayerByLayerSweep
 {
 public:
+	//! Creates a new instance of the greedy-insert heuristic.
+	GreedyInsertHeuristic() { }
+
+	//! Creates a new instance of the greedy-insert heuristic.
+	GreedyInsertHeuristic(const GreedyInsertHeuristic &crossMin) { }
+
+	//! Returns a new instance of the greed-insert heuristic with the same option settings.
+	LayerByLayerSweep *clone() const { return new GreedyInsertHeuristic(*this); }
+
 	//! Initializes weights and crossing minimization for hierarchy \a H.
-	void init (const Hierarchy &H);
+	void init (const HierarchyLevels &levels);
 
 	//! Calls the greedy insert heuristic for level \a L.
 	void call (Level &L);

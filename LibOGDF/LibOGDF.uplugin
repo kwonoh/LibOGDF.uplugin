@@ -1,8 +1,8 @@
 {
     "FileVersion" : 3,
     "FriendlyName" : "LibOGDF",
-    "Version" : 201207,
-    "VersionName" : "2012.07 (Sakura)",
+    "Version" : 201505,
+    "VersionName" : "2015.05 (Baobab)",
     "CreatedBy" : "TU Dortmund, TU Ilmenau, Monash University, Osnabrück University, University of Cologne",
     "CreatedByURL" : "http://www.ogdf.net",
     "EngineVersion" : "4.2.0",

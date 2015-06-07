@@ -1,9 +1,9 @@
 /*
- * $Revision: 2523 $
+ * $Revision: 2813 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-02 20:59:27 +0200 (Mon, 02 Jul 2012) $
+ *   $Date: 2012-10-13 14:05:35 +0200 (Sat, 13 Oct 2012) $
  ***************************************************************/
 
 /** \file
@@ -54,7 +54,6 @@
 #include <ogdf/cluster/ClusterGraph.h>
 #include <ogdf/basic/EdgeArray.h>
 #include <ogdf/cluster/ClusterArray.h>
-#include <limits.h>
 
 
 namespace ogdf {
@@ -116,7 +115,7 @@ struct OGDF_EXPORT RCCrossings
 	}
 
 	RCCrossings &setInfinity() {
-		m_cnClusters = m_cnEdges = INT_MAX;
+		m_cnClusters = m_cnEdges = numeric_limits<int>::max();
 		return *this;
 	}
 

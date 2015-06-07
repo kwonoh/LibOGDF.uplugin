@@ -1,9 +1,9 @@
 /*
- * $Revision: 2583 $
+ * $Revision: 3521 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-12 01:02:21 +0200 (Do, 12. Jul 2012) $
+ *   $Date: 2013-05-31 14:52:33 +0200 (Fri, 31 May 2013) $
  ***************************************************************/
 
 /** \file
@@ -78,7 +78,7 @@ class OGDF_EXPORT GridLayoutModule : public LayoutModule
 
 public:
 	//! Initializes a grid layout module.
-	GridLayoutModule() : LayoutModule(), m_separation(40) { }
+	GridLayoutModule() : LayoutModule(), m_separation(LayoutStandards::defaultNodeSeparation()) { }
 
 	virtual ~GridLayoutModule() { }
 
@@ -136,9 +136,10 @@ protected:
 	 */
 	virtual void doCall(const Graph &G, GridLayout &gridLayout, IPoint &boundingBox) = 0;
 
+	IPoint m_gridBoundingBox; //!< The computed bounding box of the grid layout.
+
 private:
 	double m_separation; //!< The minimum distance between nodes.
-	IPoint m_gridBoundingBox; //!< The computed bounding box of the grid layout.
 
 	//! Internal transformation of grid coordinates to real coordinates.
 	void mapGridLayout(const Graph &G,
@@ -187,22 +188,6 @@ public:
 	void callGridFixEmbed(const Graph &G, GridLayout &gridLayout, adjEntry adjExternal = 0);
 
 protected:
-	/**
-	 * \brief Implements the algorithm call.
-	 *
-	 * @param G is the input graph.
-	 * @param gridLayout is assigned the computed grid layout.
-	 * @param boundingBox returns the bounding box of the grid layout. The lower left
-	 *        corner of the bounding box is always (0,0), thus this IPoint defines the
-	 *        upper right corner as well as the width and height of the grid layout.
-	 */
-	virtual void doCall(
-		const Graph &G,
-		GridLayout &gridLayout,
-		IPoint &boundingBox)
-	{
-		doCall(G,0,gridLayout,boundingBox,false);
-	}
 
 	/**
 	 * \brief Implements the algorithm call.
@@ -220,12 +205,22 @@ protected:
 	 * @param fixEmbedding determines if the input graph is embedded and that embedding
 	 *        has to be preserved (true), or if an embedding needs to be computed (false).
 	 */
+
 	virtual void doCall(
 		const Graph &G,
 		adjEntry adjExternal,
 		GridLayout &gridLayout,
 		IPoint &boundingBox,
 		bool fixEmbedding) = 0;
+
+	//! Implements the GridLayoutModule::doCall().
+	virtual void doCall(
+		const Graph &G,
+		GridLayout &gridLayout,
+		IPoint &boundingBox)
+	{
+		doCall(G,0,gridLayout,boundingBox,false);
+	}
 };
 
 
@@ -317,7 +312,7 @@ protected:
 		IPoint &boundingBox,
 		bool fixEmbedding) = 0;
 
-private:
+
 	//! Implements PlanarGridLayoutModule::doCall().
 	void doCall(
 		const Graph &G,
@@ -325,6 +320,15 @@ private:
 		GridLayout &gridLayout,
 		IPoint &boundingBox,
 		bool fixEmbedding);
+
+	//! Implements the GridLayoutModule::doCall().
+	void doCall(
+		const Graph &G,
+		GridLayout &gridLayout,
+		IPoint &boundingBox)
+	{
+		PlanarGridLayoutModule::doCall(G,gridLayout,boundingBox);
+	}
 };
 
 

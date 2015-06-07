@@ -1,14 +1,15 @@
 /*
- * $Revision: 2564 $
+ * $Revision: 2639 $
  *
  * last checkin:
- *   $Author: gutwenger $
- *   $Date: 2012-07-07 00:03:48 +0200 (Sa, 07. Jul 2012) $
+ *   $Author: klein $
+ *   $Date: 2012-07-19 06:52:18 +0200 (Thu, 19 Jul 2012) $
  ***************************************************************/
 
 /** \file
- * \brief constructive compaction applying computation of min-cost
- * flow in the dual of the constraint graphs
+ * \brief Contains constructive and improvement compaction by
+ * applying computation of min-cost flow in the dual of the constraint
+ * graphs
  *
  * \author Carsten Gutwenger
  *

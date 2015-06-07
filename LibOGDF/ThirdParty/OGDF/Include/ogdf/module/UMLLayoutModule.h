@@ -1,9 +1,9 @@
 /*
- * $Revision: 2523 $
+ * $Revision: 3188 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-02 20:59:27 +0200 (Mon, 02 Jul 2012) $
+ *   $Date: 2013-01-10 09:53:32 +0100 (Thu, 10 Jan 2013) $
  ***************************************************************/
 
 /** \file
@@ -50,8 +50,7 @@
 #define OGDF_UML_LAYOUT_MODULE_H
 
 
-#include <ogdf/module/LayoutModule.h>
-#include <ogdf/basic/UMLGraph.h>
+#include <ogdf/uml/UMLGraph.h>
 
 
 namespace ogdf {
@@ -60,7 +59,7 @@ namespace ogdf {
 /**
  * \brief Interface of UML layout algorithms.
  */
-class OGDF_EXPORT UMLLayoutModule : public LayoutModule
+class OGDF_EXPORT UMLLayoutModule
 {
 public:
 	//! Initializes a UML layout module.

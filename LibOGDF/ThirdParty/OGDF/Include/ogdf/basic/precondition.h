@@ -1,9 +1,9 @@
 /*
- * $Revision: 2523 $
+ * $Revision: 3556 $
  *
  * last checkin:
- *   $Author: gutwenger $
- *   $Date: 2012-07-02 20:59:27 +0200 (Mon, 02 Jul 2012) $
+ *   $Author: beyer $
+ *   $Date: 2013-06-07 19:36:11 +0200 (Fri, 07 Jun 2013) $
  ***************************************************************/
 
 /** \file
@@ -11,6 +11,9 @@
  *        handling.
  *
  * \author Karsten Klein
+ *
+ * \attention This is legacy code from UML class diagram handling,
+ * and it should be checked if it is still required.
  *
  * \par License:
  * This file is part of the Open Graph Drawing Framework (OGDF).
@@ -50,8 +53,8 @@
 #ifndef OGDF_PRECONDITION_H
 #define OGDF_PRECONDITION_H
 
-
 #include <ogdf/orthogonal/EdgeRouter.h>
+#include <ogdf/uml/UMLGraph.h>
 
 
 namespace ogdf {
@@ -103,7 +106,6 @@ bool dfsGenTreeRec(
 
 edge firstOutGen(UMLGraph& UG, node v, EdgeArray<bool>& /* used */)
 {
-	//pruefen: kann es hier bereits ausgehende besuchte Kanten geben???
 	edge e;
 	forall_adj_edges(e, v)
 	{
@@ -124,13 +126,13 @@ bool dfsGenTree(
 	bool fakeTree)
 {
 	edge e;
-	EdgeArray<bool> used(UG, false);
+	EdgeArray<bool> used(UG.constGraph(), false);
 	//NodeArray<bool> visited(UG,false);
-	NodeArray<int>  hierNumber(UG, 0);
+	NodeArray<int>  hierNumber(UG.constGraph(), 0);
 
 	int hierNum = 0; //number of hierarchy tree
 
-	const Graph& G = UG;
+	const Graph& G = UG.constGraph();
 	forall_edges(e, G)
 	{
 		//descent in the hierarchy containing e
@@ -146,17 +148,13 @@ bool dfsGenTree(
 				sink = sinkPath->target();
 				sinkPath = firstOutGen(UG, sinkPath->target(), used);
 				cycleCounter++;
-				//if theres no sink, ?throw errGenCycle?, or convert Gens to Ass and draw
+				//if there is no sink, convert Generalizations to Associations and draw
 				if (cycleCounter > G.numberOfEdges())
 				{
-					//versuche workaround: eigentlich werden die Typen erst spaeter
-					//gesetzt, damit es nicht zu Fehlern bei der Erkennung kommt, aber
-					//zum Abbruch wird hier bereits eine gesetzt (geht es auch ohne?)
 					UG.type(sinkPath) = Graph::association;
 					fakedGens.pushBack(sinkPath);
 					sink = sinkPath->source();
 					sinkPath = 0;
-					//throw OgdfException(errGenCycle); //vorlaeufig
 				}
 			}
 

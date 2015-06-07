@@ -1,9 +1,9 @@
 /*
- * $Revision: 2528 $
+ * $Revision: 3188 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-03 23:05:08 +0200 (Tue, 03 Jul 2012) $
+ *   $Date: 2013-01-10 09:53:32 +0100 (Thu, 10 Jan 2013) $
  ***************************************************************/
 
 /** \file
@@ -47,6 +47,7 @@
 #include <ogdf/basic/GraphAttributes.h>
 #include <ogdf/basic/GraphCopy.h>
 
+
 namespace ogdf
 {
 
@@ -86,7 +87,7 @@ namespace ogdf
 	public:
 		//! constructs empty simdraw instance
 		/**
-		* GraphAttributes::edgeSubGraph is activated.
+		* GraphAttributes::edgeSubGraphs is activated.
 		* No other attributes are active.
 		*/
 		SimDraw();
@@ -158,9 +159,9 @@ namespace ogdf
 		int numberOfBasicGraphs() const;
 
 		//! calls GraphAttributes::readGML
-		void readGML(const char *fileName) { m_GA.readGML(m_G, fileName); }
+		void readGML(const char *fileName);
 		//! calls GraphAttributes::writeGML
-		void writeGML(const char *fileName) const { m_GA.writeGML(fileName); }
+		void writeGML(const char *fileName) const;
 
 		//! returns graph consisting of all edges and nodes from SubGraph \a i
 		const Graph getBasicGraph(int i) const;
@@ -211,7 +212,7 @@ namespace ogdf
 		bool compareByLabel(const GraphAttributes &vGA, node v,
 			const GraphAttributes &wGA, node w) const
 		{
-			return(vGA.labelNode(v) == wGA.labelNode(w));
+			return(vGA.label(v) == wGA.label(w));
 		}
 
 		//! compares two nodes \a v and \a w by compare mode stored in m_compareBy

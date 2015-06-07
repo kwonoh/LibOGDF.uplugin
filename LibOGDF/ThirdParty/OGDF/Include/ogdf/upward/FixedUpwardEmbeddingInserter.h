@@ -1,9 +1,9 @@
 /*
- * $Revision: 2555 $
+ * $Revision: 3261 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-06 12:12:10 +0200 (Fr, 06. Jul 2012) $
+ *   $Date: 2013-01-25 14:48:05 +0100 (Fri, 25 Jan 2013) $
  ***************************************************************/
 
 /** \file
@@ -52,7 +52,7 @@
 
 
 #include <ogdf/basic/Module.h>
-#include <ogdf/upward/UpwardPlanarModule.h>
+#include <ogdf/upward/UpwardPlanarity.h>
 #include <ogdf/basic/GraphCopy.h>
 #include <ogdf/upward/UpwardPlanRep.h>
 
@@ -74,8 +74,7 @@ public:
 
 	bool isUpwardPlanar(Graph &G)
 	{
-		UpwardPlanarModule upMod;
-		return upMod.upwardPlanarityTest(G);
+		return UpwardPlanarity::isUpwardPlanar_singleSource(G);
 	}
 
 private:

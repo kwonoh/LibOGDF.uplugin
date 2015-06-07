@@ -1,9 +1,9 @@
 /*
- * $Revision: 2523 $
+ * $Revision: 3008 $
  *
  * last checkin:
- *   $Author: gutwenger $
- *   $Date: 2012-07-02 20:59:27 +0200 (Mon, 02 Jul 2012) $
+ *   $Author: chimani $
+ *   $Date: 2012-11-12 16:34:59 +0100 (Mon, 12 Nov 2012) $
  ***************************************************************/
 
 /** \file
@@ -48,21 +48,21 @@
 #include <ogdf/basic/Graph_d.h>
 #include <ogdf/basic/Logger.h>
 
-#include <abacus/variable.h>
+#include <ogdf/abacus/variable.h>
 
 namespace ogdf {
 
 
-class EdgeVar : public ABA_VARIABLE {
-	friend class Sub;
+class EdgeVar : public abacus::Variable {
+	friend class MaxCPlanarSub;
 public:
 enum edgeType {ORIGINAL, CONNECT};
 
-	EdgeVar(ABA_MASTER *master, double obj, edgeType eType, node source, node target);
+	EdgeVar(abacus::Master *master, double obj, edgeType eType, node source, node target);
 	//! Simple version for cplanarity testing (only connect edges allowed)
-	EdgeVar(ABA_MASTER *master, double obj, node source, node target);
+	EdgeVar(abacus::Master *master, double obj, node source, node target);
 	//! Simple version for cplanarity testing (only connect edges allowed, lower bound given)
-	EdgeVar(ABA_MASTER *master, double obj, double lbound, node source, node target);
+	EdgeVar(abacus::Master *master, double obj, double lbound, node source, node target);
 
 	virtual ~EdgeVar();
 

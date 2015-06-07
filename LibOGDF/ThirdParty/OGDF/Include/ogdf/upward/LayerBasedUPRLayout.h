@@ -1,9 +1,9 @@
 /*
- * $Revision: 2524 $
+ * $Revision: 3832 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-03 09:54:22 +0200 (Tue, 03 Jul 2012) $
+ *   $Date: 2013-11-13 11:16:27 +0100 (Wed, 13 Nov 2013) $
  ***************************************************************/
 
 /** \file
@@ -57,7 +57,7 @@
 #include <ogdf/layered/OptimalHierarchyLayout.h>
 #include <ogdf/layered/FastHierarchyLayout.h>
 #include <ogdf/layered/OptimalRanking.h>
-
+#include <ogdf/layered/HierarchyLevels.h>
 
 namespace ogdf {
 
@@ -165,7 +165,7 @@ protected :
 
 
 	struct RankComparer {
-		Hierarchy *H;
+		const Hierarchy *H;
 		bool less(node v1, node v2) const {
 			return (H->rank(v1) < H->rank(v2));
 		}
@@ -180,31 +180,31 @@ private:
 
 
 	//! rearanging the position of the sources in order to reduce some crossings.
-	void postProcessing_sourceReorder(Hierarchy &H, List<node> &sources);
+	void postProcessing_sourceReorder(HierarchyLevels &levels, List<node> &sources);
 
 
 	//! reduce the long edge dummies (LED)
-	void postProcessing_reduceLED(Hierarchy &H, List<node> &sources) {
+	void postProcessing_reduceLED(Hierarchy &H, HierarchyLevels &levels, List<node> &sources) {
 		forall_listiterators(node, it, sources)
-			postProcessing_reduceLED(H, *it);
+			postProcessing_reduceLED(H, levels, *it);
 	}
 
-	void postProcessing_reduceLED(Hierarchy &H, node vH);
+	void postProcessing_reduceLED(Hierarchy &H, HierarchyLevels &levels, node vH);
 
-	void post_processing_reduce(Hierarchy &H, int &i, node s, int minIdx, int maxIdx, NodeArray<bool> &markedNodes);
+	void post_processing_reduce(Hierarchy &H, HierarchyLevels &levels, int &i, node s, int minIdx, int maxIdx, NodeArray<bool> &markedNodes);
 
 	//! mark all the nodes dominated by sH.	(Help method for postProcessing_reduceLED() )
-	void postProcessing_markUp(Hierarchy &H, node sH, NodeArray<bool> &markedNodes);
+	void postProcessing_markUp(HierarchyLevels &levels, node sH, NodeArray<bool> &markedNodes);
 
 
 	//! delete level i of H.
-	void post_processing_deleteLvl(Hierarchy &H, int i);
+	void post_processing_deleteLvl(Hierarchy &H, HierarchyLevels &levels, int i);
 
 	//! delete the interval [beginIdx,endIdx] on the level j.
-	void post_processing_deleteInterval(Hierarchy &H, int beginIdx, int endIdx, int &j);
+	void post_processing_deleteInterval(Hierarchy &H, HierarchyLevels &levels, int beginIdx, int endIdx, int &j);
 
 	//! insert the interval  [beginIdx,endIdx] of level i-1 to level i at position pos.
-	void post_processing_CopyInterval(Hierarchy &H, int i, int beginIdx, int endIdx, int pos);
+	void post_processing_CopyInterval(Hierarchy &H, HierarchyLevels &levels, int i, int beginIdx, int endIdx, int pos);
 
 	int m_numLevels;
 	int m_maxLevelSize;

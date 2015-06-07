@@ -1,9 +1,9 @@
 /*
- * $Revision: 2632 $
+ * $Revision: 3949 $
  *
  * last checkin:
- *   $Author: gutwenger $
- *   $Date: 2012-07-17 21:04:24 +0200 (Di, 17. Jul 2012) $
+ *   $Author: beyer $
+ *   $Date: 2014-03-03 01:25:50 +0100 (Mon, 03 Mar 2014) $
  ***************************************************************/
 
 /** \file
@@ -105,14 +105,14 @@ template<class E> class ListIterator {
 
 public:
 	//! Constructs an iterator pointing to no element.
-	ListIterator() : m_pX(0) { }
+	ListIterator() : m_pX(NULL) { }
 	//! Constructs an iterator pointing to \a pX.
 	ListIterator(ListElement<E> *pX) : m_pX(pX) { }
 	//! Constructs an iterator that is a copy of \a it.
 	ListIterator(const ListIterator<E> &it) : m_pX(it.m_pX) { }
 
 	//! Returns true iff the iterator points to an element.
-	bool valid() const { return m_pX != 0; }
+	bool valid() const { return m_pX != NULL; }
 
 	//! Equality operator.
 	bool operator==(const ListIterator<E> &it) const {
@@ -192,7 +192,7 @@ template<class E> class ListConstIterator {
 
 public:
 	//! Constructs an iterator pointing to no element.
-	ListConstIterator() : m_pX(0) { }
+	ListConstIterator() : m_pX(NULL) { }
 
 	//! Constructs an iterator pointing to \a pX.
 	ListConstIterator(const ListElement<E> *pX) : m_pX(pX) { }
@@ -203,7 +203,7 @@ public:
 	ListConstIterator(const ListConstIterator &it) : m_pX(it.m_pX) { }
 
 	//! Returns true iff the iterator points to an element.
-	bool valid() const { return m_pX != 0; }
+	bool valid() const { return m_pX != NULL; }
 
 	//! Equality operator.
 	bool operator==(const ListConstIterator<E> &it) const {
@@ -390,41 +390,38 @@ public:
 
 	//! Returns an iterator to the cyclic successor of \a it.
 	/**
-	 * \pre \a it points to an element in this list!
+	 * \pre \a it points to an element in this list or to NULL!
 	 */
 	ListConstIterator<E> cyclicSucc(ListConstIterator<E> it) const {
 		const ListElement<E> *pX = it;
-		return (pX->m_next) ? pX->m_next : m_head;
+		return (pX && pX->m_next) ? pX->m_next : m_head;
 	}
 
 	//! Returns an iterator to the cyclic successor of \a it.
 	/**
-	 * \pre \a it points to an element in this list!
+	 * \pre \a it points to an element in this list or to NULL!
 	 */
 	ListIterator<E> cyclicSucc(ListIterator<E> it) {
-		OGDF_ASSERT(it.valid())
 		ListElement<E> *pX = it;
-		return (pX->m_next) ? pX->m_next : m_head;
+		return (pX && pX->m_next) ? pX->m_next : m_head;
 	}
 
 	//! Returns an iterator to the cyclic predecessor of \a it.
 	/**
-	 * \pre \a it points to an element in this list!
+	 * \pre \a it points to an element in this list or to NULL!
 	 */
 	ListConstIterator<E> cyclicPred(ListConstIterator<E> it) const {
-		OGDF_ASSERT(it.valid())
 		const ListElement<E> *pX = it;
-		return (pX->m_prev) ? pX->m_prev : m_tail;
+		return (pX && pX->m_prev) ? pX->m_prev : m_tail;
 	}
 
 	//! Returns an iterator to the cyclic predecessor of \a it.
 	/**
-	 * \pre \a it points to an element in this list!
+	 * \pre \a it points to an element in this list or to NULL!
 	 */
 	ListIterator<E> cyclicPred(ListIterator<E> it) {
-		OGDF_ASSERT(it.valid())
 		ListElement<E> *pX = it;
-		return (pX->m_prev) ? pX->m_prev : m_tail;
+		return (pX && pX->m_prev) ? pX->m_prev : m_tail;
 	}
 
 	//! Returns an iterator pointing to the element at position \a pos.
@@ -653,6 +650,21 @@ public:
 		else m_head = pNext;
 		if (pNext) pNext->m_prev = pPrev;
 		else m_tail = pPrev;
+	}
+
+	//! Removes the first occurrence of \a x (if any) from the list.
+	/**
+	 * If the list contains \a x several times, only the first element
+	 * containing \a x is removed.
+	 *
+	 * \return true if one element has been removed, false otherwise.
+	 */
+	bool removeFirst(const E &x) {
+		for(ListElement<E> *pX = m_head; pX != 0; pX = pX->m_next)
+			if(pX->m_x == x) {
+				del(pX); return true;
+			}
+		return false;
 	}
 
 	//! Exchanges the positions of \a it1 and \a it2 in the list.
@@ -1031,21 +1043,38 @@ public:
 		permute(size());
 	}
 
-	//! Scans the list for the specified element and returns its position in the list, or -1 if not found.
-	int search (const E& e) const {
-		int x = 0;
-		for(ListConstIterator<E> i = begin(); i.valid(); ++i, ++x)
-			if(*i == e) return x;
-		return -1;
+	//! Scans the list for the specified element and returns an iterator to the first occurrence in the list, or an invalid iterator if not found.
+	ListConstIterator<E> search(const E& e) const {
+		ListConstIterator<E> i;
+		for (i = begin(); i.valid(); ++i)
+			if (*i == e) return i;
+		return i;
 	}
 
-	//! Scans the list for the specified element (using the user-defined comparer) and returns its position in the list, or -1 if not found.
+	//! Scans the list for the specified element and returns an iterator to the first occurrence in the list, or an invalid iterator if not found.
+	ListIterator<E> search(const E& e) {
+		ListIterator<E> i;
+		for (i = begin(); i.valid(); ++i)
+			if (*i == e) return i;
+		return i;
+	}
+
+	//! Scans the list for the specified element (using the user-defined comparer) and returns an iterator to the first occurrence in the list, or an invalid iterator if not found.
 	template<class COMPARER>
-	int search (const E& e, const COMPARER &comp) const {
-		int x = 0;
-		for(ListConstIterator<E> i = begin(); i.valid(); ++i, ++x)
-			if(comp.equal(*i,e)) return x;
-		return -1;
+	ListConstIterator<E> search(const E &e, const COMPARER &comp) const {
+		ListConstIterator<E> i;
+		for (i = begin(); i.valid(); ++i)
+			if (comp.equal(*i, e)) return i;
+		return i;
+	}
+
+	//! Scans the list for the specified element (using the user-defined comparer) and returns an iterator to the first occurrence in the list, or an invalid iterator if not found.
+	template<class COMPARER>
+	ListIterator<E> search(const E &e, const COMPARER &comp) {
+		ListIterator<E> i;
+		for (i = begin(); i.valid(); ++i)
+			if (comp.equal(*i, e)) return i;
+		return i;
 	}
 
 protected:
@@ -1437,6 +1466,19 @@ public:
 		ListPure<E>::del(it);
 	}
 
+	//! Removes the first occurrence of \a x (if any) from the list.
+	/**
+	 * If the list contains \a x several times, only the first element
+	 * containing \a x is removed.
+	 */
+	bool removeFirst(const E &x) {
+		bool hasRemoved = ListPure<E>::removeFirst(x);
+		if(hasRemoved)
+			--m_count;
+		return hasRemoved;
+	}
+
+
 	//! Appends \a L2 to this list and makes \a L2 empty.
 	void conc(List<E> &L2) {
 		ListPure<E>::conc(L2);
@@ -1515,17 +1557,27 @@ public:
 		ListPure<E>::permute(m_count);
 	}
 
-	//! Scans the list for the specified element and returns its position in the list, or -1 if not found.
-	int search (const E& e) const {
+	//! Scans the list for the specified element and returns an iterator to the first occurrence in the list, or an invalid iterator if not found.
+	ListConstIterator<E> search(const E &e) const {
 		return ListPure<E>::search(e);
 	}
 
-	//! Scans the list for the specified element (using the user-defined comparer) and returns its position in the list, or -1 if not found.
+	//! Scans the list for the specified element and returns an iterator to the first occurrence in the list, or an invalid iterator if not found.
+	ListIterator<E> search(const E &e) {
+		return ListPure<E>::search(e);
+	}
+
+	//! Scans the list for the specified element (using the user-defined comparer) and returns an iterator to the first occurrence in the list, or an invalid iterator if not found.
 	template<class COMPARER>
-	int search (const E& e, const COMPARER &comp) const {
+	ListConstIterator<E> search(const E &e, const COMPARER &comp) const {
 		return ListPure<E>::search(e, comp);
 	}
 
+	//! Scans the list for the specified element (using the user-defined comparer) and returns an iterator to the first occurrence in the list, or an invalid iterator if not found.
+	template<class COMPARER>
+	ListIterator<E> search(const E &e, const COMPARER &comp) {
+		return ListPure<E>::search(e, comp);
+	}
 
 	OGDF_NEW_DELETE
 }; // class List

@@ -1,9 +1,9 @@
 /*
- * $Revision: 2573 $
+ * $Revision: 3188 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-10 18:48:33 +0200 (Di, 10. Jul 2012) $
+ *   $Date: 2013-01-10 09:53:32 +0100 (Thu, 10 Jan 2013) $
  ***************************************************************/
 
 /** \file
@@ -54,7 +54,6 @@
 
 #include <ogdf/internal/orthogonal/RoutingChannel.h>
 #include <ogdf/orthogonal/MinimumEdgeDistances.h>
-#include <ogdf/orthogonal/OrthoLayout.h>
 #include <ogdf/basic/Layout.h>
 #include <ogdf/basic/GridLayout.h>
 #include <ogdf/basic/GridLayoutMapped.h>

@@ -1,9 +1,9 @@
 /*
- * $Revision: 2615 $
+ * $Revision: 3074 $
  *
  * last checkin:
- *   $Author: gutwenger $
- *   $Date: 2012-07-16 14:23:36 +0200 (Mo, 16. Jul 2012) $
+ *   $Author: chimani $
+ *   $Date: 2012-11-29 11:01:06 +0100 (Thu, 29 Nov 2012) $
  ***************************************************************/
 
 /** \file
@@ -200,7 +200,7 @@ public:
 
 private:
 	virtual void enlargeTable(int newTableSize) {
-		Array<T>::grow(newTableSize-Array<T>::size(),m_x);
+		Array<T>::resize(newTableSize,m_x);
 	}
 
 	virtual void reinit(int initTableSize) {

@@ -1,9 +1,9 @@
 /*
- * $Revision: 2566 $
+ * $Revision: 3188 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-07 23:10:08 +0200 (Sa, 07. Jul 2012) $
+ *   $Date: 2013-01-10 09:53:32 +0100 (Thu, 10 Jan 2013) $
  ***************************************************************/
 
 /** \file
@@ -76,16 +76,27 @@ namespace ogdf {
  * Observe that this algorithm by theory does not compute a maximal
  * planar subgraph. It is however the fastest known good heuristic.
  */
-class OGDF_EXPORT FastPlanarSubgraph : public PlanarSubgraphModule{
+class OGDF_EXPORT FastPlanarSubgraph : public PlanarSubgraphModule {
+
+	class ThreadMaster;
+	class Worker;
+	typedef std::pair<Graph*,EdgeArray<edge>*> BlockType;
 
 public:
-	//! Creates an instance of the fast planar subgraph algorithm.
-	FastPlanarSubgraph() : PlanarSubgraphModule() {
-		m_nRuns = 0;
-	};
+	//! Creates an instance of the fast planar subgraph algorithm with default settings.
+	FastPlanarSubgraph();
 
-	// destructor
+	//! Creates an instance of the fast planar subgraph algorithm with the same settings as \a fps.
+	FastPlanarSubgraph(const FastPlanarSubgraph &fps);
+
+	//! Destructor
 	~FastPlanarSubgraph() { }
+
+	//! Returns a new instance of fast planar subgraph with the same option settings.
+	virtual PlanarSubgraphModule *clone() const;
+
+	//! Assignment operator. Copies option settings only.
+	FastPlanarSubgraph &operator=(const FastPlanarSubgraph &fps);
 
 
 	// options
@@ -116,22 +127,21 @@ protected:
 private:
 	int m_nRuns;  //!< The number of runs for randomization.
 
+	//! Realizes the sequential implementation.
+	void seqCall(const Array<BlockType> &block, const EdgeArray<int> *pCost, int nRuns, bool randomize, List<edge> &delEdges);
 
-	//! Computes the list of edges to be deleted in \a G.
-	/** Also performs randomization of the planarization algorithm.
-	 */
-	void computeDelEdges(const Graph &G,
-		const EdgeArray<int> *pCost,
-		const EdgeArray<edge> *backTableEdges,
-		List<edge> &delEdges);
+	//! Realizes the parallel implementation.
+	void parCall(const Array<BlockType> &block, const EdgeArray<int> *pCost, int nRuns, int nThreads, List<edge> &delEdges);
 
 	//! Performs a planarization on a biconnected component pf \a G.
 	/** The numbering contains an st-numbering of the component.
 	 */
-	void planarize(
+	static void planarize(
 		const Graph &G,
 		NodeArray<int> &numbering,
 		List<edge> &delEdges);
+
+	static void doWorkHelper(ThreadMaster &master);
 };
 
 }

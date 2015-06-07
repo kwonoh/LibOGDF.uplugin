@@ -1,9 +1,9 @@
 /*
- * $Revision: 2615 $
+ * $Revision: 3547 $
  *
  * last checkin:
- *   $Author: gutwenger $
- *   $Date: 2012-07-16 14:23:36 +0200 (Mo, 16. Jul 2012) $
+ *   $Author: beyer $
+ *   $Date: 2013-06-06 14:47:08 +0200 (Thu, 06 Jun 2013) $
  ***************************************************************/
 
 /** \file
@@ -52,7 +52,7 @@
 #define OGDF_GRAPH_D_H
 
 
-#include <ogdf/basic/List.h>
+#include <ogdf/basic/GraphList.h>
 
 
 namespace ogdf {
@@ -67,305 +67,11 @@ class OGDF_EXPORT NodeElement;
 class OGDF_EXPORT EdgeElement;
 class OGDF_EXPORT AdjElement;
 class OGDF_EXPORT FaceElement;
-class OGDF_EXPORT GraphListBase;
 class OGDF_EXPORT ClusterElement;
-
-
-//! The base class for objects used by graphs like nodes, edges, etc.
-/**
- * Such graph objects are maintained in list (see GraphList<T>),
- * and \a GraphElement basically provides a next and previous pointer
- * for these objects.
- */
-class OGDF_EXPORT GraphElement {
-	friend class Graph;
-	friend class GraphListBase;
-
-protected:
-	GraphElement *m_next; //!< The successor in the list.
-	GraphElement *m_prev; //!< The predecessor in the list.
-
-	OGDF_NEW_DELETE
-}; // class GraphElement
-
-
-//! Base class for GraphElement lists.
-class OGDF_EXPORT GraphListBase {
-protected:
-	GraphElement *m_head; //!< Pointer to the first element in the list.
-	GraphElement *m_tail; //!< Pointer to the last element in the list.
-
-public:
-	//! Constructs an empty list.
-	GraphListBase() { m_head = m_tail = 0; }
-	// destruction
-	~GraphListBase() { }
-
-	//! Adds element \a pX at the end of the list.
-	void pushBack(GraphElement *pX) {
-		pX->m_next = 0;
-		pX->m_prev = m_tail;
-		if (m_head)
-			m_tail = m_tail->m_next = pX;
-		else
-			m_tail = m_head = pX;
-	}
-
-	//! Inserts element \a pX after element \a pY.
-	void insertAfter(GraphElement *pX, GraphElement *pY) {
-		pX->m_prev = pY;
-		GraphElement *pYnext = pX->m_next = pY->m_next;
-		pY->m_next = pX;
-		if (pYnext) pYnext->m_prev = pX;
-		else m_tail = pX;
-	}
-
-	//! Inserts element \a pX before element \a pY.
-	void insertBefore(GraphElement *pX, GraphElement *pY) {
-		pX->m_next = pY;
-		GraphElement *pYprev = pX->m_prev = pY->m_prev;
-		pY->m_prev = pX;
-		if (pYprev) pYprev->m_next = pX;
-		else m_head = pX;
-	}
-
-	//! Removes element \a pX from the list.
-	void del(GraphElement *pX) {
-		GraphElement *pxPrev = pX->m_prev, *pxNext = pX->m_next;
-
-		if (pxPrev)
-			pxPrev->m_next = pxNext;
-		else
-			m_head = pxNext;
-		if (pxNext)
-			pxNext->m_prev = pxPrev;
-		else
-			m_tail = pxPrev;
-	}
-
-	//! Sorts the list according to \a newOrder.
-	template<class LIST>
-	void sort(const LIST &newOrder) {
-		GraphElement *pPred = 0;
-		typename LIST::const_iterator it = newOrder.begin();
-		if (!it.valid()) return;
-
-		m_head = *it;
-		for(; it.valid(); ++it) {
-			GraphElement *p = *it;
-			if ((p->m_prev = pPred) != 0) pPred->m_next = p;
-			pPred = p;
-		}
-
-		(m_tail = pPred)->m_next = 0;
-	}
-
-	//! Reverses the order of the list elements.
-	void reverse() {
-		GraphElement *pX = m_head;
-		m_head = m_tail;
-		m_tail = pX;
-		while(pX) {
-			GraphElement *pY = pX->m_next;
-			pX->m_next = pX->m_prev;
-			pX = pX->m_prev = pY;
-		}
-	}
-
-	//! Exchanges the positions of \a pX and \a pY in the list.
-	void swap(GraphElement *pX, GraphElement *pY) {
-		if (pX->m_next == pY) {
-			pX->m_next = pY->m_next;
-			pY->m_prev = pX->m_prev;
-			pY->m_next = pX;
-			pX->m_prev = pY;
-
-		} else if(pY->m_next == pX) {
-			pY->m_next = pX->m_next;
-			pX->m_prev = pY->m_prev;
-			pX->m_next = pY;
-			pY->m_prev = pX;
-
-		} else {
-			::swap(pX->m_next,pY->m_next);
-			::swap(pX->m_prev,pY->m_prev);
-		}
-
-		if(pX->m_prev)
-			pX->m_prev->m_next = pX;
-		else
-			m_head = pX;
-		if(pX->m_next)
-			pX->m_next->m_prev = pX;
-		else
-			m_tail = pX;
-
-		if(pY->m_prev)
-			pY->m_prev->m_next = pY;
-		else
-			m_head = pY;
-		if(pY->m_next)
-			pY->m_next->m_prev = pY;
-		else
-			m_tail = pY;
-
-		OGDF_ASSERT(consistencyCheck());
-	}
-
-
-	//! Checks consistency of graph list.
-	bool consistencyCheck() {
-		if (m_head == 0) {
-			return (m_tail == 0);
-
-		} else if (m_tail == 0) {
-			return false;
-
-		} else {
-			if (m_head->m_prev != 0)
-				return false;
-			if (m_tail->m_next != 0)
-				return false;
-
-			GraphElement *pX = m_head;
-			for(; pX; pX = pX->m_next) {
-				if (pX->m_prev) {
-					if (pX->m_prev->m_next != pX)
-						return false;
-				} else if(pX != m_head)
-					return false;
-
-				if (pX->m_next) {
-					if (pX->m_next->m_prev != pX)
-						return false;
-				} else if (pX != m_tail)
-					return false;
-			}
-		}
-
-		return true;
-	}
-
-	OGDF_NEW_DELETE
-}; // class GraphListBase
-
-
-//! Lists of graph objects (like nodes, edges, etc.).
-/**
- * The template type \a T must be a class derived from GraphElement.
- */
-template<class T> class GraphList : protected GraphListBase {
-public:
-	//! Constructs an empty list.
-	GraphList() { }
-	// destruction (deletes all elements)
-	~GraphList() {
-		if (m_head)
-			OGDF_ALLOCATOR::deallocateList(sizeof(T), m_head,m_tail);
-	}
-
-	//! Returns the first element in the list.
-	T *begin () const { return (T *)m_head; }
-	//! Returns the last element in the list.
-	T *rbegin() const { return (T *)m_tail; }
-
-	//! Returns true iff the list is empty.
-	bool empty() { return m_head; }
-
-	//! Adds element \a pX at the end of the list.
-	void pushBack(T *pX) {
-		GraphListBase::pushBack(pX);
-	}
-
-	//! Inserts element \a pX after element \a pY.
-	void insertAfter(T *pX, T *pY) {
-		GraphListBase::insertAfter(pX,pY);
-	}
-
-	//! Inserts element \a pX before element \a pY.
-	void insertBefore(T *pX, T *pY) {
-		GraphListBase::insertBefore(pX,pY);
-	}
-
-	//! Moves element \a pX to list \a L and inserts it before or after \a pY.
-	void move(T *pX, GraphList<T> &L, T *pY, Direction dir) {
-		GraphListBase::del(pX);
-		if (dir == after)
-			L.insertAfter(pX,pY);
-		else
-			L.insertBefore(pX,pY);
-	}
-
-	//! Moves element \a pX to list \a L and inserts it at the end.
-	void move(T *pX, GraphList<T> &L) {
-		GraphListBase::del(pX);
-		L.pushBack(pX);
-	}
-
-	//! Moves element \a pX from its current position to a position after \a pY.
-	void moveAfter(T *pX, T *pY){
-		GraphListBase::del(pX);
-		insertAfter(pX,pY);
-	}
-
-	//! Moves element \a pX from its current position to a position before \a pY.
-	void moveBefore(T *pX, T *pY){
-		GraphListBase::del(pX);
-		insertBefore(pX,pY);
-	}
-
-	//! Removes element \a pX from the list and deletes it.
-	void del(T *pX) {
-		GraphListBase::del(pX);
-		delete pX;
-	}
-
-	//! Only removes element \a pX from the list; does not delete it.
-	void delPure(T *pX) {
-		GraphListBase::del(pX);
-	}
-
-	//! Removes all elements from the list and deletes them.
-	void clear() {
-		if (m_head) {
-			OGDF_ALLOCATOR::deallocateList(sizeof(T),m_head,m_tail);
-			m_head = m_tail = 0;
-		}
-	}
-
-	//! Sorts all elements according to \a newOrder.
-	template<class T_LIST>
-	void sort(const T_LIST &newOrder) {
-		GraphListBase::sort(newOrder);
-	}
-
-
-	//! Reverses the order of the list elements.
-	void reverse() {
-		GraphListBase::reverse();
-	}
-
-	//! Exchanges the positions of \a pX and \a pY in the list.
-	void swap(T *pX, T *pY) {
-		GraphListBase::swap(pX,pY);
-	}
-
-
-	//! Checks consistency of graph list; returns true if ok.
-	bool consistencyCheck() {
-		return GraphListBase::consistencyCheck();
-	}
-
-
-	OGDF_NEW_DELETE
-}; // class GraphList<T>
-
 
 typedef NodeElement *node; //!< The type of nodes.
 typedef EdgeElement *edge; //!< The type of edges.
 typedef AdjElement *adjEntry; //!< The type of adjacency entries.
-
-
 
 //! Class for adjacency list elements.
 /**
@@ -437,6 +143,10 @@ public:
 	const Graph *graphOf() const;
 #endif
 
+	//! Standard Comparer
+	static int compare(const AdjElement& x,const AdjElement& y) { return x.m_id-y.m_id; }
+	OGDF_AUGMENT_STATICCOMPARER(AdjElement)
+
 	OGDF_NEW_DELETE
 }; // class AdjElement
 
@@ -497,6 +207,10 @@ public:
 	//! Returns the graph containing this node (debug only).
 	const Graph *graphOf() const { return m_pGraph; }
 #endif
+
+	//! Standard Comparer
+	static int compare(const NodeElement& x,const NodeElement& y) { return x.m_id-y.m_id; }
+	OGDF_AUGMENT_STATICCOMPARER(NodeElement)
 
 	OGDF_NEW_DELETE
 }; // class NodeElement
@@ -585,6 +299,10 @@ public:
 	//! Returns the common node of the edge and \a e. Returns NULL if the two edges are not adjacent.
 	node commonNode(edge e) const { return (m_src==e->m_src || m_src==e->m_tgt) ? m_src : ((m_tgt==e->m_src || m_tgt==e->m_tgt) ? m_tgt: 0); }
 
+	//! Standard Comparer
+	static int compare(const EdgeElement& x,const EdgeElement& y) { return x.m_id-y.m_id; }
+	OGDF_AUGMENT_STATICCOMPARER(EdgeElement)
+
 	OGDF_NEW_DELETE
 }; // class EdgeElement
 
@@ -637,6 +355,10 @@ for(ogdf::adjEntry ogdf_loop_var=(v)->firstAdj();\
 
 //! Data type for general directed graphs (adjacency list representation).
 /**
+ * <H3>Thread Safety</H3>
+ * The class Graph allows shared access of threads to const methods only.
+ * If one thread executes a non-const method, shared access is no longer thread-safe.
+ *
  * <H3>Iteration</H3>
  * Besides the usage of iteration macros defined in Graph_d.h, the following
  * code is recommended for further iteration tasks.
@@ -704,6 +426,10 @@ class OGDF_EXPORT Graph
 	mutable ListPure<EdgeArrayBase*> m_regEdgeArrays; //!< The registered edge arrays.
 	mutable ListPure<AdjEntryArrayBase*> m_regAdjArrays;  //!< The registered adjEntry arrays.
 	mutable ListPure<GraphObserver*> m_regStructures; //!< The registered graph structures.
+
+#ifndef OGDF_MEMORY_POOL_NTS
+	mutable CriticalSection m_csRegArrays; //!< The critical section for protecting shared acces to register/unregister methods.
+#endif
 
 	GraphList<EdgeElement> m_hiddenEdges; //!< The list of hidden edges.
 
@@ -969,13 +695,13 @@ public:
 	/**
 	 * @param v is the node that will be deleted.
 	 */
-	void delNode(node v);
+	virtual void delNode(node v);
 
 	//! Removes edge \a e from the graph.
 	/**
 	 * @param e is the egde that will be deleted.
 	 */
-	void delEdge(edge e);
+	virtual void delEdge(edge e);
 
 	//! Removes all nodes and all edges from the graph.
 	void clear();
@@ -1143,7 +869,7 @@ public:
 	 */
 	void moveSource(edge e, adjEntry adjSrc, Direction dir);
 
-	//! Searches and returns an edge connecting nodes \a v and \a w.
+	//! Searches and returns an edge connecting nodes \a v and \a w in time O(min(deg(v), deg(w))).
 	/**
 	 * @param v is the source node of the edge to be searched.
 	 * @param w is the target node of the edge to be searched.
@@ -1274,54 +1000,6 @@ public:
 
 		adj1->theNode()->m_adjEdges.swap(adj1,adj2);
 	}
-
-
-	//@}
-	/**
-	 * @name Input and output
-	 */
-	//@{
-
-	//! Reads a graph in GML format from file \a fileName.
-	/**
-	 * @param fileName is the name of the input file.
-	 * @return true if successful, false otherwise.
-	 */
-	bool readGML(const char *fileName);
-
-	//! Reads a graph in GML format from input stream \a is.
-	/**
-	 * @param is is the input file stream.
-	 * @return true if successful, false otherwise.
-	 */
-	bool readGML(istream &is);
-
-	//! Writes the graph in GML format to file \a fileName.
-	/**
-	 * @param fileName is the name of the output file.
-	 */
-	void writeGML(const char *fileName) const;
-
-	//! Writes the graph in GML format to output stream \a os.
-	/**
-	 * @param os is the output file stream.
-	 * @return true if successful, false otherwise.
-	 */
-	void writeGML(ostream &os) const;
-
-	//! Reads a graph in LEDA format from file \a fileName.
-	/**
-	 * @param fileName is the name of the input file.
-	 * @return true if successful, false otherwise.
-	 */
-	bool readLEDAGraph(const char *fileName);
-
-	//! Read a graph in LEDA format from input stream \a is.
-	/**
-	 * @param is is the input file stream.
-	 * @return true if successful, false otherwise.
-	 */
-	bool readLEDAGraph(istream &is);
 
 
 	//@}
@@ -1492,12 +1170,59 @@ public:
 	static int nextPower2(int start, int idCount);
 
 
-protected:
-	void construct(const Graph &G, NodeArray<node> &mapNode,
-		EdgeArray<edge> &mapEdge);
+	//! Info structure for maintaining connected components.
+	class CCsInfo {
 
-	void assign(const Graph &G, NodeArray<node> &mapNode,
-		EdgeArray<edge> &mapEdge);
+		const Graph *m_graph;	//!< points to the associated graph.
+		int m_numCC;			//!< the number of connected components.
+
+		Array<node> m_nodes;	//!< array of all nodes.
+		Array<edge> m_edges;	//!< array of all edges.
+		Array<int>  m_startNode; //!< start node of each connected component in m_nodes.
+		Array<int>  m_startEdge; //!< start edge of each connected component in m_edges.
+
+	public:
+		//! Creates a info structure associated with no graph.
+		CCsInfo() : m_graph(0), m_numCC(0) { }
+
+		//! Creates a info structure associated with graph \a G.
+		CCsInfo(const Graph& G);
+
+		//! Returns the associated graph.
+		const Graph &constGraph() const { return *m_graph; }
+
+		//! Returns the number of connected components.
+		int numberOfCCs() const { return m_numCC; }
+
+		//! Returns the number of nodes in connected component \ cc.
+		int numberOfNodes(int cc) const { return stopNode(cc) - startNode(cc); }
+
+		//! Returns the number of edges in connected component \ cc.
+		int numberOfEdges(int cc) const { return stopEdge(cc) - startEdge(cc); }
+
+		//! Returns the index of the first node in connected component \a cc.
+		int startNode(int cc) const { return m_startNode[cc]; }
+
+		//! Returns the index of (one past) the last node in connected component \a cc.
+		int stopNode (int cc) const { return m_startNode[cc+1]; }
+
+		//! Returns the index of the first edge in connected component \a cc.
+		int startEdge(int cc) const { return m_startEdge[cc]; }
+
+		//! Returns the index of (one past) the last edge in connected component \a cc.
+		int stopEdge (int cc) const { return m_startEdge[cc+1]; }
+
+		//! Returns the node with index \a i.
+		node v(int i) const { return m_nodes[i]; }
+
+		//! Returns the edge with index \a i.
+		edge e(int i) const { return m_edges[i]; }
+	};
+
+protected:
+	void construct(const Graph &G, NodeArray<node> &mapNode, EdgeArray<edge> &mapEdge);
+
+	void assign(const Graph &G, NodeArray<node> &mapNode, EdgeArray<edge> &mapEdge);
 
 	//! Constructs a copy of the subgraph of \a G induced by \a nodes.
 	/**
@@ -1516,6 +1241,13 @@ protected:
 		NodeArray<node> &mapNode,
 		EdgeArray<edge> &mapEdge);
 
+	//! Constructs a copy of connected component \a cc in \a info.
+	void constructInitByCC(
+		const CCsInfo &info,
+		int cc,
+		NodeArray<node> &mapNode,
+		EdgeArray<edge> &mapEdge);
+
 private:
 	void copy(const Graph &G, NodeArray<node> &mapNode,
 		EdgeArray<edge> &mapEdge);
@@ -1531,7 +1263,21 @@ private:
 	void reinitStructures();
 	void resetAdjEntryIndex(int newIndex, int oldIndex);
 
-	bool readToEndOfLine(istream &is);
+	//! Enter critical section for (un-)registering arrays.
+	void enterCSRegArrays() const {
+#ifndef OGDF_MEMORY_POOL_NTS
+		m_csRegArrays.enter();
+#endif
+	}
+
+	//! Leave critical section for (un-)registering arrays.
+	void leaveCSRegArrays() const {
+#ifndef OGDF_MEMORY_POOL_NTS
+		m_csRegArrays.leave();
+#endif
+	}
+
+
 }; // class Graph
 
 

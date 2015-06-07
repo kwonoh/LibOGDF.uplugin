@@ -1,14 +1,14 @@
 /*
- * $Revision: 2523 $
+ * $Revision: 3261 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-02 20:59:27 +0200 (Mon, 02 Jul 2012) $
+ *   $Date: 2013-01-25 14:48:05 +0100 (Fri, 25 Jan 2013) $
  ***************************************************************/
 
 /** \file
  * \brief Declaration of class UpwardPlanarSubgraphSimple which
- *        computes an upward planar subgfraph by using UpwardPlanarModule.
+ *        computes an upward planar subgraph by using upward planarity testing.
  *
  * \author Carsten Gutwenger
  *

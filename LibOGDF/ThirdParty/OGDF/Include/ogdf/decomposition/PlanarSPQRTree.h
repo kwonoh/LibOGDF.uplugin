@@ -1,9 +1,9 @@
 /*
- * $Revision: 2523 $
+ * $Revision: 3507 $
  *
  * last checkin:
- *   $Author: gutwenger $
- *   $Date: 2012-07-02 20:59:27 +0200 (Mon, 02 Jul 2012) $
+ *   $Author: zeranski $
+ *   $Date: 2013-05-21 14:13:26 +0200 (Tue, 21 May 2013) $
  ***************************************************************/
 
 /** \file
@@ -92,6 +92,12 @@ public:
 	 */
 	double numberOfEmbeddings(node v) const;
 
+	//! Returns the number of possible embeddings of the skeleton of node \a vT.
+	/**
+	 * \pre \a vT is a node in \a T
+	 * Returns 1 if vT is a S-node, 2 if vT is a R-node, and (number of edges in the sekeleton - 1)! if vT is a P-node.
+	 */
+	long long numberOfNodeEmbeddings(node vT);
 
 	//
 	// b) Update operations
@@ -136,6 +142,27 @@ public:
 		embed(G);
 	}
 
+	//! Embeds the original graph \a G canonically by the indices of their adjEntries.
+	/**
+	 * \pre \a G is the graph passed to the constructor of \a T
+	 */
+	void firstEmbedding(Graph &G);
+
+	//! Embeds the original graph \a G with the next embedding.
+	/**
+	 * It returns \a false iff there is no feasible (planar) embedding left
+	 * \pre To work correctly it has to start with firstEmbedding(G)
+	 * \pre \a G is the graph passed to the constructor of \a T
+	 */
+	bool nextEmbedding(Graph &G);
+
+	//! Embeds the skeleton of the node vT with the specific embedding numbered by x.
+	/**
+	 * \pre To work correctly vT has to be a node of the SPQR-tree and 0 &le; x &le; number of embeddings of vT's skeleton
+	 * \pre It does not work at the same time with firstEmbedding and nextEmbedding
+	 */
+	void embed(node &vT, long long x);
+
 
 protected:
 	//! Initialization (adaption of embeding).
@@ -154,6 +181,16 @@ protected:
 		adjEntry adjVirt,
 		SListPure<adjEntry> &adjEdges);
 	void createInnerVerticesEmbed(Graph &G, node vT);
+
+	// Enumeration of all embeddings
+	void firstEmbedding(node &vT);
+	void reverse(node &nP,
+		adjEntry &first,
+		adjEntry &last);
+	bool nextEmbedding(node &vT);
+	bool nextEmbedding(ListIterator<node> it);
+
+	bool m_finished;
 
 }; // class PlanarSPQRTree
 

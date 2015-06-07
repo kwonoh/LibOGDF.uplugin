@@ -1,9 +1,9 @@
 /*
- * $Revision: 2523 $
+ * $Revision: 2963 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-02 20:59:27 +0200 (Mon, 02 Jul 2012) $
+ *   $Date: 2012-11-05 14:17:50 +0100 (Mon, 05 Nov 2012) $
  ***************************************************************/
 
 /** \file
@@ -50,10 +50,8 @@
 #ifndef OGDF_LP_SOLVER_H
 #define OGDF_LP_SOLVER_H
 
-#if defined(OGDF_OWN_LPSOLVER)
-#include <ogdf/internal/lpsolver/LPSolver_ogdf.h>
 
-#elif defined(USE_COIN)
+#ifdef USE_COIN
 #include <ogdf/internal/lpsolver/LPSolver_coin.h>
 #endif
 

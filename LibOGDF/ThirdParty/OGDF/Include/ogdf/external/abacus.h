@@ -1,9 +1,9 @@
 /*
- * $Revision: 2523 $
+ * $Revision: 3087 $
  *
  * last checkin:
- *   $Author: gutwenger $
- *   $Date: 2012-07-02 20:59:27 +0200 (Mon, 02 Jul 2012) $
+ *   $Author: chimani $
+ *   $Date: 2012-11-29 20:17:52 +0100 (Thu, 29 Nov 2012) $
  ***************************************************************/
 
 /** \file
@@ -49,22 +49,22 @@
 #ifndef OGDF_ABACUS_H
 #define OGDF_ABACUS_H
 
+#include <ogdf/basic/basic.h>
+
 #ifdef USE_ABACUS
 
-#include <abacus/variable.h>
-#include <abacus/constraint.h>
-#include <abacus/master.h>
-#include <abacus/buffer.h>
-#include <abacus/sub.h>
-#include <abacus/row.h>
-#include <abacus/nonduplpool.h>
-#include <abacus/active.h>
-#include <abacus/branchrule.h>
-#include <abacus/conbranchrule.h>
+#include <ogdf/abacus/variable.h>
+#include <ogdf/abacus/constraint.h>
+#include <ogdf/abacus/master.h>
+#include <ogdf/abacus/sub.h>
+#include <ogdf/abacus/row.h>
+#include <ogdf/abacus/nonduplpool.h>
+#include <ogdf/abacus/active.h>
+#include <ogdf/abacus/branchrule.h>
+#include <ogdf/abacus/conbranchrule.h>
 
 #else // USE_ABACUS
 
-#include <ogdf/basic/basic.h>
 #define THROW_NO_ABACUS_EXCEPTION OGDF_THROW_PARAM(LibraryNotSupportedException, lnscAbacus)
 
 

@@ -1,9 +1,9 @@
 /*
- * $Revision: 2523 $
+ * $Revision: 4018 $
  *
  * last checkin:
- *   $Author: gutwenger $
- *   $Date: 2012-07-02 20:59:27 +0200 (Mon, 02 Jul 2012) $
+ *   $Author: beyer $
+ *   $Date: 2014-03-30 05:25:51 +0200 (Sun, 30 Mar 2014) $
  ***************************************************************/
 
 /** \file
@@ -49,7 +49,7 @@
 #ifndef OGDF_OGML_H
 #define OGDF_OGML_H
 
-#include <ogdf/basic/String.h>
+#include <ogdf/basic/basic.h>
 
 
 namespace ogdf
@@ -58,11 +58,6 @@ namespace ogdf
 class Ogml
 {
 public:
-
-	//! Max count of ogml tags (used for setting maxOccurs).
-	static const int MAX_TAG_COUNT = 4000;
-
-
 	//! This enumeration is used for identifying OGML tags.
 	enum TagId
 	{
@@ -120,14 +115,16 @@ public:
 
 
 	//! Stores the names of all OGML tags.
-	static const String s_tagNames[TAG_NUM];
+	static const string s_tagNames[TAG_NUM];
 
 
 	//! This enumeration is used for identifying OGML attributes.
 	enum AttributeId
 	{
 		a_none = -1,
-		a_alignment,
+		a_xmlns,
+		a_textAlign,
+		a_verticalAlign,
 		a_angle,
 		a_color,
 		a_decoration,
@@ -167,12 +164,6 @@ public:
 		a_x,
 		a_y,
 		a_z,
-		a_imageUri,
-		a_imageStyle,
-		a_imageAlignment,
-		a_imageDrawLine,
-		a_imageWidth,
-		a_imageHeight,
 		a_constraintType,
 		a_disabled,
 
@@ -181,55 +172,37 @@ public:
 
 
 	//! Stores the names of all OGML attributes.
-	static const String s_attributeNames[ATT_NUM];
+	static const string s_attributeNames[ATT_NUM];
 
 
 	//! This enumeration is used for identifying OGML attributes.
 	enum AttributeValueId
 	{
 		av_any = 0,					//!< for any attributeValue
-		av_blink,
 		av_bold,
-		av_bolder,
+		av_black,
 		av_bool,
+		av_bottom,
 		av_box,
 		av_capitalize,
 		av_center,
-		av_checked,
 		av_circle,
 		av_condensed,
-		av_cursive,
-		av_dashed,
-		av_esNoPen,					//!< values for line style
-		av_esSolid,
-		av_esDash,
-		av_esDot,
-		av_esDashdot,
-		av_esDashdotdot,
-		av_diamond,
-		av_dotted,
-		av_double,
-		av_doubleSlash,
+		av_dash,
+		av_demiBold,
+		av_dot,
+		av_dashDot,
+		av_dashDotDot,
 		av_ellipse,
 		av_expanded,
 		av_extraCondensed,
 		av_extraExpanded,
-		av_fantasy,
-		av_filledBox,
-		av_filledCircle,
-		av_filledDiamond,
-		av_filledHalfBox,
-		av_filledHalfCircle,
-		av_filledHalfDiamond,
-		av_filledHalfRhomb,
-		av_filledRhomb,
-		av_smurf,
+		av_oBox,
+		av_oCircle,
+		av_oRhomb,
+		av_oTriangle,
 		av_arrow,
 		av_groove,
-		av_halfBox,
-		av_halfCircle,
-		av_halfDiamond,
-		av_halfRhomb,
 		av_hexagon,
 		av_hex,						//!< hexadecimal value
 		av_id,
@@ -245,16 +218,17 @@ public:
 		av_image,
 		av_inset,
 		av_int,						//!< integer value
+		av_invTriangle,
+		av_invTrapeze,
+		av_invParallelogram,
 		av_italic,
 		av_justify,
 		av_left,
-		av_lighter,
-		av_line,
+		av_light,
 		av_lineThrough,
 		av_lowercase,
-		av_lParallelogram,
-		av_monospace,
-		av_narrower,
+		av_middle,
+		av_noFill,
 		av_none,
 		av_normal,
 		av_num,						//!< real value
@@ -263,59 +237,42 @@ public:
 		av_octagon,
 		av_outset,
 		av_overline,
+		av_parallelogram,
 		av_pentagon,
 		av_rect,
-		av_rectSimple,
+		av_regular,
 		av_rhomb,
 		av_ridge,
 		av_right,
-		av_rParallelogram,
-		av_sansSerif,
+		av_roundedRect,
 		av_semiCondensed,
 		av_semiExpanded,
-		av_serif,
-		av_slash,
 		av_smallCaps,
 		av_solid,
-		av_bpNone,					//!< values for node patterns
-		av_bpSolid,
-		av_bpDense1,
-		av_bpDense2,
-		av_bpDense3,
-		av_bpDense4,
-		av_bpDense5,
-		av_bpDense6,
-		av_bpDense7,
-		av_bpHorizontal,
-		av_bpVertical,
-		av_bpCross,
-		av_bpBackwardDiagonal,
-		av_bpForwardDiagonal,
-		av_bpDiagonalCross,
+		av_dense1,
+		av_dense2,
+		av_dense3,
+		av_dense4,
+		av_dense5,
+		av_dense6,
+		av_dense7,
+		av_hor,
+		av_ver,
+		av_cross,
+		av_bDiag,
+		av_fDiag,
+		av_diagCross,
 		av_string,
-		av_striped,
+		av_tee,
+		av_top,
 		av_trapeze,
 		av_triangle,
-		av_triple,
 		av_ultraCondensed,
 		av_ultraExpanded,
-		av_umlClass,
 		av_underline,
 		av_uppercase,
-		av_upTrapeze,
 		av_uri,
-		av_wider,
-		av_freeScale,				//!< image-style
-		av_fixScale,				//!< image-style
-		av_topLeft,					//!< image-alignemnt
-		av_topCenter,				//!< image-alignemnt
-		av_topRight,				//!< image-alignemnt
-		av_centerLeft,				//!< image-alignemnt
-		//	av_center,				// just defined	// image-alignemnt
-		av_centerRight,				//!< image-alignemnt
-		av_bottomLeft,				//!< image-alignemnt
-		av_bottomCenter,			//!< image-alignemnt
-		av_bottomRight,				//!< image-alignemnt
+		av_vee,
 		// Constraint-Types:
 		av_constraintAlignment,
 		av_constraintAnchor,
@@ -326,7 +283,7 @@ public:
 
 
 	//! Stores the names of all OGML values of attributes.
-	static const String s_attributeValueNames[ATT_VAL_NUM];
+	static const string s_attributeValueNames[ATT_VAL_NUM];
 
 
 	//! This enumeration is used for encoding diverse validity stati of tags and attributes after parsing and validating a Xml file.
@@ -346,20 +303,21 @@ public:
 	};
 
 
-	//! This enumeration is used for indentifying graph types.
+	//! This enumeration is used for identifying graph types.
 	enum GraphType
 	{
 		graph,
 		clusterGraph,
 		compoundGraph,
-		corruptCompoundGraph
+		corruptCompoundGraph,
+
+		GRAPH_TYPE_NUM					//!< number of graph types
 	};
 
-
 	//! Stores the names of graph types.
-	static const String s_graphTypeS[];
+	static const string s_graphTypeS[GRAPH_TYPE_NUM];
 };
 
-}; //namspace ogdf
+} //namspace ogdf
 
 #endif

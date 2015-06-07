@@ -1,9 +1,9 @@
 /*
- * $Revision: 2566 $
+ * $Revision: 3425 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-07 23:10:08 +0200 (Sa, 07. Jul 2012) $
+ *   $Date: 2013-04-22 10:19:37 +0200 (Mon, 22 Apr 2013) $
  ***************************************************************/
 
 /** \file
@@ -176,8 +176,6 @@ private:
 
 	void insertBasicArcs(const PlanRep &PG);
 
-	node m_superSource;
-	node m_superSink;
 	SList<node> m_sources;
 	SList<node> m_sinks;
 
@@ -229,7 +227,7 @@ public:
 
 
 	// returns underlying graph
-	const Graph &getGraph() const { return (Graph&)*this; }
+	const Graph &getGraph() const { return (const Graph&)*this; }
 	Graph &getGraph() { return (Graph&)*this; }
 
 
@@ -853,7 +851,6 @@ void CompactionConstraintGraph<ATYPE>::insertVertexSizeArcs(
 
 					edge e1 = newEdge(vMin,vCenter);
 					m_length[e1] = lenMin;
-					//if (lenMin < minDist.epsilon(v,m_arcDir,0)) exit(1);
 					m_cost[e1]   = m_vertexArcCost;
 					m_type[e1]   = cetVertexSizeArc;
 					edge e2 = newEdge(vCenter,vMax);
@@ -883,7 +880,6 @@ void CompactionConstraintGraph<ATYPE>::insertVertexSizeArcs(
 
 						//attention: pathnode construct works only if degree 1
 						edge eBungeeOut =  newEdge(vBungee, m_pathNode[cornerDir->twinNode()]);
-						if (m_pathNode[cornerDir->twinNode()] == vMin) exit(1);
 						//bungee, center and outgoing segment may build column if in the middle
 						m_type[eBungeeOut] = cetMedianArc;
 						m_cost[eBungeeOut] = m_bungeeCost; //what about this !!!!!!!!!!!!!!!!!!!
@@ -1661,10 +1657,8 @@ void CompactionConstraintGraph<ATYPE>::writeGML(ostream &os) const
 		os << "    source " << id[e->source()] << "\n";
 		os << "    target " << id[e->target()] << "\n";
 
-		// nice idea to use the edge length as edge labels, but Graphwin-
-		// garbage is not able to show the graph (thinks it has to set
-		// the y-coordinates of all nodes to NAN)
 #if 0
+		// show edge lengths as edge lables (not yet supported)
 		os << "    label \"";
 		writeLength(os, e);
 		os << "\"\n";

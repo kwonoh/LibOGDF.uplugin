@@ -1,9 +1,9 @@
 /*
- * $Revision: 2564 $
+ * $Revision: 2816 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-07 00:03:48 +0200 (Sa, 07. Jul 2012) $
+ *   $Date: 2012-10-15 09:07:22 +0200 (Mon, 15 Oct 2012) $
  ***************************************************************/
 
 /** \file
@@ -354,12 +354,6 @@ public:
 	 */
 	DPoint position(const double fraction, double len = -1.0) const;
 
-	//! Writes the polyline as graph in gml-format to file \a filename.
-	void writeGML(const char* filename) const;
-
-	//! Writes the polyline as graph in gml-format to output stream \a stream.
-	void writeGML(ostream &stream) const;
-
 	//! Deletes all successive points with equal coordinates.
 	void unify();
 
@@ -434,10 +428,10 @@ public:
 	double dy() const { return m_end.m_y - m_start.m_y; }
 
 	//! Returns the slope of the line.
-	double slope() const { return (dx() == 0) ? DBL_MAX : dy()/dx(); }
+	double slope() const { return (dx() == 0) ? numeric_limits<double>::max() : dy()/dx(); }
 
 	//! Returns the value y' such that (0,y') lies on the unlimited straight-line define dby this line.
-	double yAbs() const { return (dx() == 0) ? DBL_MAX : m_start.m_y - (slope() * m_start.m_x); }
+	double yAbs() const { return (dx() == 0) ? numeric_limits<double>::max() : m_start.m_y - (slope() * m_start.m_x); }
 
 	//! Returns true iff this line runs vertically.
 	bool isVertical()   const { return (DIsEqual(dx(), 0.0)); }
@@ -765,12 +759,6 @@ public:
 
 	//! Deletes all points, which are not facets.
 	void normalize();
-
-	//! Writes the polygon as graph in gml-format to file \a filename.
-	void writeGML(const char* filename) const;
-
-	//! Writes the polygon as graph in gml-format to output stream \a stream.
-	void writeGML(ostream &stream)      const;
 
 	/**
 	 * \brief Checks wether a Point /a p is inside the Poylgon or not.

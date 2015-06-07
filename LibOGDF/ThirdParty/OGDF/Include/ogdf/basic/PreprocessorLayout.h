@@ -1,9 +1,9 @@
 /*
- * $Revision: 2523 $
+ * $Revision: 3432 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-02 20:59:27 +0200 (Mon, 02 Jul 2012) $
+ *   $Date: 2013-04-22 12:20:23 +0200 (Mon, 22 Apr 2013) $
  ***************************************************************/
 
 /** \file
@@ -105,6 +105,8 @@ public:
 
 	//! Calculates a drawing for the Graph \a GA.
 	void call(GraphAttributes &GA);
+
+	void call(GraphAttributes &GA, GraphConstraints & GC) { call(GA); }
 
 	//! Sets the secondary layout.
 	void setLayoutModule(LayoutModule *layout) {

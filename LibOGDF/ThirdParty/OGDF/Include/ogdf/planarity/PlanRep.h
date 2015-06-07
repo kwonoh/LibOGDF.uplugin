@@ -1,16 +1,16 @@
 /*
- * $Revision: 2583 $
+ * $Revision: 3388 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-12 01:02:21 +0200 (Do, 12. Jul 2012) $
+ *   $Date: 2013-04-10 14:56:08 +0200 (Wed, 10 Apr 2013) $
  ***************************************************************/
 
 /** \file
  * \brief Declaration of a base class for planar representations
  *        of graphs and cluster graphs.
  *
- * \author Karsten Klein
+ * \author Karsten Klein, Carsten Gutwenger
  *
  * \par License:
  * This file is part of the Open Graph Drawing Framework (OGDF).
@@ -42,9 +42,9 @@
  ***************************************************************/
 
 
-//PlanRep should not know about generalizations and association,
-//but we already set types in Attributedgraph, therefore set them
-//in PlanRep, too
+// PlanRep should not know about generalizations and association,
+// but we already set types in Attributedgraph, therefore set them
+// in PlanRep, too
 
 #ifdef _MSC_VER
 #pragma once
@@ -58,16 +58,15 @@
 #include <ogdf/planarity/EdgeTypePatterns.h>
 #include <ogdf/planarity/NodeTypePatterns.h>
 #include <ogdf/basic/Layout.h>
+#include <ogdf/basic/GridLayout.h>
 #include <ogdf/orthogonal/OrthoRep.h>
-#include <ogdf/basic/GraphAttributes.h>
 
 
 namespace ogdf {
 
 
+//! Planarized representations (of a connected component) of a graph.
 /**
- * \brief Planarized representations (of a connected component) of a graph.
- *
  * Maintains types of edges (generalization, association) and nodes,
  * and the connected components of the graph.
  */
@@ -87,20 +86,17 @@ public:
 	};
 
 
-	/* @{
-	 * \brief Creates a planarized representation of graph \a G.
-	 */
+	//@{
+	//! Creates a planarized representation of graph \a G.
 	PlanRep(const Graph& G);
 
-	/**
-	 * \brief Creates a planarized representation of graph \a AG.
-	 */
+	//! Creates a planarized representation of graph \a AG.
 	PlanRep(const GraphAttributes& AG);
 
-	virtual ~PlanRep() {}
-
+	virtual ~PlanRep() { }
 
 	//@}
+
 	/**
 	 * @name Processing connected components
 	 * Planarized representations provide a mechanism for always representing
@@ -108,48 +104,62 @@ public:
 	 */
 	//@{
 
-	 /**
-	 * \brief Returns the number of connected components in the original graph.
-	 */
+	//! Returns the number of connected components in the original graph.
 	int numberOfCCs() const {
-		return m_nodesInCC.size();
+		return m_ccInfo.numberOfCCs();
 	}
 
-	/**
-	 * \brief Returns the index of the current connected component (-1 if not yet initialized).
-	 */
+	//! Returns the index of the current connected component (-1 if not yet initialized).
 	int currentCC() const {
 		return m_currentCC;
 	}
 
-	/**
-	 * \brief Returns the list of (original) nodes in connected component \a i.
-	 *
-	 * Note that connected components are numbered 0,1,...
-	 */
-	const List<node> &nodesInCC(int i) const {
-		return m_nodesInCC[i];
+	//! Returns the connected components info structure.
+	const CCsInfo &ccInfo() const { return m_ccInfo; }
+
+	//! Returns the number of nodes in the current connected component.
+	int numberOfNodesInCC() const { return numberOfNodesInCC(m_currentCC); }
+
+	//! Returns the number of nodes in connected component \a cc.
+	int numberOfNodesInCC(int cc) const {
+		return stopNode(cc) - startNode(cc);
 	}
 
-	/**
-	 * \brief Returns the list of (original) nodes in the current connected component.
-	 */
-	const List<node> &nodesInCC() const {
-		return m_nodesInCC[m_currentCC];
-	}
+	//! Returns node \a i in the list of all original nodes.
+	node v(int i) const { return m_ccInfo.v(i); }
 
+	//! Returns edge \a i in the list of all original edges.
+	edge e(int i) const { return m_ccInfo.e(i); }
+
+	//! Returns the index of the first node in this connected component.
+	int startNode() const { return m_ccInfo.startNode(m_currentCC); }
+
+	//! Returns the index of the first node in connected component \a cc.
+	int startNode(int cc) const { return m_ccInfo.startNode(cc); }
+
+	//! Returns the index of (one past) the last node in this connected component.
+	int stopNode() const { return m_ccInfo.stopNode(m_currentCC); }
+
+	//! Returns the index of (one past) the last node in connected component \a cc.
+	int stopNode(int cc) const { return m_ccInfo.stopNode(cc); }
+
+	//! Returns the index of the first edge in this connected component.
+	int startEdge() const { return m_ccInfo.startEdge(m_currentCC); }
+
+	//! Returns the index of (one past) the last edge in this connected component.
+	int stopEdge() const { return m_ccInfo.stopEdge(m_currentCC); }
+
+	//! Initializes the planarized representation for connected component \a cc.
 	/**
-	 * \brief Initializes the planarized representation for connected component \a i.
-	 *
 	 * This initialization is always required. After performing this initialization,
-	 * the planarized representation represents a copy of the <i>i</i>-th connected
-	 * component of the original graph, where connected components are numbered
+	 * the planarized representation represents a copy of the connected
+	 * component \a cc of the original graph, where connected components are numbered
 	 * 0,1,2,...
 	 */
-	void initCC(int i);
-
+	void initCC(int cc);
 
 	//@}
+
 	/**
 	 * @name Node expansion
 	 */
@@ -213,7 +223,7 @@ public:
 		return m_vType[v];
 	}
 
- 	/**
+	/**
 	 * \brief Returns a reference to the type of node \a v.
 	 * @param v is a node in the planarized representation.
 	 */
@@ -451,35 +461,38 @@ public:
 	//-----------------
 	//set generic types
 
+	//! Sets type of edge \a e to current type (bitwise) AND \a et.
 	edgeType edgeTypeAND(edge e, edgeType et) {m_edgeTypes[e] &= et; return m_edgeTypes[e];}
 
+	//! Sets type of edge \a e to current type (bitwise) OR \a et.
 	edgeType edgeTypeOR(edge e, edgeType et) {m_edgeTypes[e] |= et; return m_edgeTypes[e];}
 
-	//set primary edge type of edge e to primary edge type in et
-	//deletes old primary value
+	//! Sets primary edge type of edge \a e to primary edge type in \a et (deletes old primary value).
 	void setPrimaryType(edge e, edgeType et) {
 		m_edgeTypes[e] &= 0xfffffff0;
 		m_edgeTypes[e] |= (etpPrimary & et);
 	}
 
+	//! Sets secondary edge type of edge \a e to primary edge type in \a et.
 	void setSecondaryType(edge e, edgeType et) {
 		m_edgeTypes[e] &= 0xffffff0f;
 		m_edgeTypes[e] |= (etpSecondary & ( et << etoSecondary));
 	}
 
-	//sets primary type to bitwise AND of et's primary value and old value
+	//! Sets primary type of \a e to bitwise AND of \a et's primary value and old value.
 	edgeType edgeTypePrimaryAND(edge e, edgeType et) {m_edgeTypes[e] &= (etpAll & et); return m_edgeTypes[e];}
 
-	//sets primary type to bitwise OR of et's primary value and old value
+	//! Sets primary type of \a e to bitwise OR of \a et's primary value and old value.
 	edgeType edgeTypePrimaryOR(edge e, edgeType et) {m_edgeTypes[e] |= et; return m_edgeTypes[e];}
 
-	//set user defined type locally
+	//! Sets user defined type locally.
 	void setUserType(edge e, edgeType et)
 	{
 		OGDF_ASSERT( et < 147);
 		m_edgeTypes[e] |= (et << etoUser);
 	}
 
+	//! Returns user defined type.
 	bool isUserType(edge e, edgeType et)
 	{
 		OGDF_ASSERT( et < 147);
@@ -496,17 +509,22 @@ public:
 	//if it is implemented correctly later, delete the array and return m_etype == Graph::expand
 	//(the whole function then is obsolete, cause you can check it directly, but for convenience...)
 	//should use genexpand, nodeexpand, dissect instead of bool
+
+	//! Sets the expansion edge type of \ e to \a expType.
 	void setExpansionEdge(edge e, int expType) {
 		m_expansionEdge[e] = expType;
 	}
 
+	//! Returns if \a e is an expansion edge.
 	bool isExpansionEdge(edge e) const {
 		return (m_expansionEdge[e] > 0);
 	}
 
+	//! Returns the expansion edge type of \a e.
 	int expansionType(edge e) const { return m_expansionEdge[e]; }
 
 	//precondition normalized
+	//! Returns if \a e is a degree expansion edge.
 	bool isDegreeExpansionEdge(edge e) const {
 		//return (m_eType[e] == Graph::expand);
 		return ( m_expansionEdge[e]  == 2);
@@ -559,11 +577,12 @@ public:
 	//@{
 
 	// Expands nodes with degree > 4 and merge nodes for generalizations
-	void expand(bool lowDegreeExpand = false);
+	virtual void expand(bool lowDegreeExpand = false);
 
 	void expandLowDegreeVertices(OrthoRep &OR);
 
 	void collapseVertices(const OrthoRep &OR, Layout &drawing);
+	void collapseVertices(const OrthoRep &OR, GridLayout &drawing);
 
 	void removeCrossing(node v); //removes the crossing at node v
 
@@ -627,26 +646,24 @@ public:
 	 */
 	//@{
 
-	// embeds current copy
-	bool embed();
-
-	// removes all crossing nodes which are actually only two "touching" edges
-	void removePseudoCrossings();
-
-	// re-inserts edge eOrig by "crossing" the edges in crossedEdges;
-	// splits each edge in crossedEdges
-	// Precond.: eOrig is an edge in the original graph,
-	//           the edges in crossedEdges are in this graph
+	//! Re-inserts edge \a eOrig by "crossing" the edges in \a crossedEdges.
+	/**
+	 * Splits each edge in crossedEdges.
+	 *
+	 * \pre \a eOrig is an edge in the original graph and the edges in \a crossedEdges are in this graph.
+	 */
 	void insertEdgePath(edge eOrig, const SList<adjEntry> &crossedEdges);
 
-	// same as insertEdgePath, but assumes that the graph is embedded
+	//! Same as insertEdgePath, but for embedded graphs.
 	void insertEdgePathEmbedded(
 		edge eOrig,
 		CombinatorialEmbedding &E,
 		const SList<adjEntry> &crossedEdges);
 
-	// removes the complete edge path for edge eOrig
-	// Precond.: eOrig s an edge in the original graph
+	//! Removes the complete edge path for edge \a eOrig while preserving the embedding.
+	/**
+	 * \pre \a eOrig s an edge in the original graph.
+	 */
 	void removeEdgePathEmbedded(CombinatorialEmbedding &E,
 		edge eOrig,
 		FaceSetPure &newFaces) {
@@ -697,13 +714,16 @@ public:
 	void restoreDeg1Nodes(Stack<Deg1RestoreInfo> &S, List<node> &deg1s);
 
 	//@}
+	void writeGML(const char *fileName, const OrthoRep &OR, const GridLayout &drawing);
+	void writeGML(ostream &os, const OrthoRep &OR, const GridLayout &drawing);
 
 protected:
 
 	int m_currentCC; //!< The index of the current component.
-	int m_numCC;     //!< The number of components in the original graph.
+	Graph::CCsInfo m_ccInfo;
+	//int m_numCC;     //!< The number of components in the original graph.
 
-	Array<List<node> >  m_nodesInCC; //!< The list of original nodes in each component.
+	//Array<List<node> >  m_nodesInCC; //!< The list of original nodes in each component.
 
 	const GraphAttributes* m_pGraphAttributes; //!< Pointer to graph attributes of original graph.
 
@@ -723,12 +743,6 @@ protected:
 	edgeType halfBrotherPattern()    {return etcHalfBrother   << etoFourth;}
 	edgeType cliquePattern()         {return etcSecClique << etoSecondary;} //boundary
 
-
-	void removeUnnecessaryCrossing(
-		adjEntry adjA1,
-		adjEntry adjA2,
-		adjEntry adjB1,
-		adjEntry adjB2);
 
 //--------------------------------------------------------------------------
 

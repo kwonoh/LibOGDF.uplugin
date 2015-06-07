@@ -1,9 +1,9 @@
 /*
- * $Revision: 2523 $
+ * $Revision: 3188 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-02 20:59:27 +0200 (Mon, 02 Jul 2012) $
+ *   $Date: 2013-01-10 09:53:32 +0100 (Thu, 10 Jan 2013) $
  ***************************************************************/
 
 /** \file
@@ -50,6 +50,7 @@
 
 #include <ogdf/module/EdgeInsertionModule.h>
 #include <ogdf/decomposition/StaticPlanarSPQRTree.h>
+#include <ogdf/planarity/RemoveReinsertType.h>
 
 
 namespace ogdf {
@@ -58,11 +59,20 @@ namespace ogdf {
 class OGDF_EXPORT MultiEdgeApproxInserter : public EdgeInsertionModule
 {
 public:
-	//! Creates an instance of multi-edge inserter.
+	//! Creates an instance of multi-edge approx inserter with default option settings.
 	MultiEdgeApproxInserter();
 
+	//! Creates an instance of multi-edge approx inserter with the same settings as \a inserter.
+	MultiEdgeApproxInserter(const MultiEdgeApproxInserter &inserter);
+
+	//! Destructor.
 	~MultiEdgeApproxInserter() { }
 
+	//! Returns a new instance of the multi-edge approx inserter with the same option settings.
+	EdgeInsertionModule *clone() const;
+
+	//! Assignment operator. Copies option settings only.
+	MultiEdgeApproxInserter &operator=(const MultiEdgeApproxInserter &inserter);
 
 	//! Sets the remove-reinsert postprocessing method.
 	void removeReinsertFix(RemoveReinsertType rrOption) {
@@ -139,12 +149,11 @@ private:
 
 	//! Implements the algorithm call.
 	ReturnType doCall(
-		PlanRep &PG,
-		const List<edge> &origEdges,
-		bool forbidCrossingGens,
-		const EdgeArray<int> *costOrig,
-		const EdgeArray<bool> *forbiddenEdgeOrig,
-		const EdgeArray<unsigned int> *edgeSubGraph);
+		PlanRepLight              &pr,
+		const Array<edge>         &origEdges,
+		const EdgeArray<int>      *costOrig,
+		const EdgeArray<bool>     *forbiddenEdge,
+		const EdgeArray<__uint32> *edgeSubGraphs);
 
 	MultiEdgeApproxInserter::Block *constructBlock(int i);
 	node copy(node vOrig, int b);
@@ -167,7 +176,7 @@ private:
 	double m_percentMostCrossedVar;   //!< The portion of most crossed edges considered (variable embedding).
 	bool m_statistics; // !< Generates further statistic information.
 
-	PlanRep *m_pPG; // pointer to plan-rep passed in call
+	PlanRepLight *m_pPG; // pointer to plan-rep passed in call
 	const EdgeArray<int> *m_costOrig;
 
 	NodeArray<SList<int> > m_compV;     //  m_compV[v] = list of blocks containing v
@@ -176,7 +185,7 @@ private:
 	NodeArray<node>        m_GtoBC;     // temporary mapping of nodes in PG to copies in block
 	NodeArray<SList<VertexBlock> > m_copyInBlocks; // mapping of nodes in PG to copies in block
 
-	Array<edge> m_edge;                  // array of edges to be inserted
+	const Array<edge> *m_edge;           // pointer to array of edges to be inserted
 	Array<List<VertexBlock> > m_pathBCs; // insertion path in BC-tree for each edge
 	Array<int> m_insertionCosts;         // computed insertion costs for each edge
 	Array<Block*> m_block;               // array of blocks
@@ -186,7 +195,7 @@ private:
 	int m_sumFEInsertionCosts;
 
 	// just for testing
-	void constructDual(const PlanRep &PG);
+	void constructDual(const PlanRepLight &pr);
 	int findShortestPath(node s, node t);
 
 	ConstCombinatorialEmbedding m_E;

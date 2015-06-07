@@ -1,9 +1,9 @@
 /*
- * $Revision: 2584 $
+ * $Revision: 2641 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-12 02:38:07 +0200 (Do, 12. Jul 2012) $
+ *   $Date: 2012-07-19 15:21:36 +0200 (Thu, 19 Jul 2012) $
  ***************************************************************/
 
 /** \file
@@ -136,7 +136,7 @@ protected:
 	//check if node v is adjacent to all nodes in node list
 	bool allAdjacent(node v, List<node>* vList);
 	void writeGraph(Graph &G, NodeArray<int> &cliqueNumber,
-		const String &fileName);
+		const char *fileName);
 
 	//does a heuristic evaluation of node v (in m_pCopy)
 	//concerning its qualification as a cluster start node

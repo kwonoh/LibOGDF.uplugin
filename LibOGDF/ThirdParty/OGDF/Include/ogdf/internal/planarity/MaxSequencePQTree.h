@@ -1,9 +1,9 @@
 /*
- * $Revision: 2583 $
+ * $Revision: 3556 $
  *
  * last checkin:
- *   $Author: gutwenger $
- *   $Date: 2012-07-12 01:02:21 +0200 (Do, 12. Jul 2012) $
+ *   $Author: beyer $
+ *   $Date: 2013-06-07 19:36:11 +0200 (Fri, 07 Jun 2013) $
  ***************************************************************/
 
 /** \file
@@ -54,7 +54,7 @@
 
 
 #include <string.h>
-
+#include <ogdf/basic/Graph.h>
 #include <ogdf/internal/planarity/PQTree.h>
 #include <ogdf/internal/planarity/PQLeafKey.h>
 #include <ogdf/internal/planarity/whaInfo.h>
@@ -936,7 +936,7 @@ findMinWHASequence(StackPure<PQNode<T,whaInfo*,Y>*> &archiv,
 					is depicted by the children [[hChild1]] and [[hChild2]] which may be
 					either full or partial. The children between [[hChild1]] and
 					[[hChild2]] are full and are marked $b$, while [[hChild1]] and
-					[[hChild2]] are marked $b$ or $h$, according to their status (see \cite{Lei97}).
+					[[hChild2]] are marked $b$ or $h$, according to their status.
 					Setting the type of the nodes is hidden in calling the function
 					[[setAchildren]] (see \ref{setAchildren}).
 					\end{enumerate}
@@ -1416,7 +1416,7 @@ void MaxSequencePQTree<T,Y>::hNumQnode(
 	of full nodes, including at most one partial child at the end of the sequence.
 
 	The variable [[fullLabel]] is [[true]] as long as the [[while]]-loop
-	has not detected an partial {\bf or} empty child (see case [[if
+	has not detected an partial <b>or</b> empty child (see case [[if
 	(leftChild->status() != FULL)]]. Observe that the
 	construction of the [[while]]-loop examines the last child if it is a
 	partial child as well (see case [[if (leftChild->status() !=
@@ -1446,7 +1446,7 @@ void MaxSequencePQTree<T,Y>::hNumQnode(
 	of full nodes, including at most one partial child at the end of the sequence.
 
 	The variable [[fullLabel]] is [[true]] as long as the [[while]]-loop
-	has not detected an partial {\bf or} empty child (see case [[if
+	has not detected an partial <b>or</b> empty child (see case [[if
 	(leftChild->status() != FULL)]]. Observe that the
 	construction of the [[while]]-loop examines the last child if it is a
 	partial child as well (see case [[if (leftChild->status() !=

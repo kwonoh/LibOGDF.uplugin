@@ -1,9 +1,9 @@
 /*
- * $Revision: 2615 $
+ * $Revision: 2641 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-16 14:23:36 +0200 (Mo, 16. Jul 2012) $
+ *   $Date: 2012-07-19 15:21:36 +0200 (Thu, 19 Jul 2012) $
  ***************************************************************/
 
 /** \file
@@ -79,8 +79,8 @@ namespace ogdf {
  * avoid that array access for undefined indices creates these elements.
  *
  * \code
- *   HashArray<String,String> H("[undefined]");
- *   const HashArray<String,String> &Hc = H;
+ *   HashArray<string,string> H("[undefined]");
+ *   const HashArray<string,string> &Hc = H;
  *
  *   H["Hund"]  = "dog";
  *   H["Katze"] = "cat";
@@ -90,7 +90,7 @@ namespace ogdf {
  *   cout << "Hamster: " << Hc["Hamster"] << endl;
  *
  *   cout << "\nAll elements:" << endl;
- *   HashConstIterator<String,String> it;
+ *   HashConstIterator<string,string> it;
  *   for(it = Hc.begin(); it.valid(); ++it)
  *     cout << it.key() << " -> " << it.info() << endl;
  * \endcode

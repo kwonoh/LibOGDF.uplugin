@@ -1,9 +1,9 @@
 /*
- * $Revision: 2564 $
+ * $Revision: 3157 $
  *
  * last checkin:
- *   $Author: gutwenger $
- *   $Date: 2012-07-07 00:03:48 +0200 (Sa, 07. Jul 2012) $
+ *   $Author: chimani $
+ *   $Date: 2012-12-12 16:49:59 +0100 (Wed, 12 Dec 2012) $
  ***************************************************************/
 
 /** \file
@@ -44,7 +44,8 @@
 #ifndef OGDF_LOGGER_H
 #define OGDF_LOGGER_H
 
-#include <ogdf/basic/basic.h>
+//#include <ogdf/basic/basic.h>
+#include <ogdf/internal/basic/config.h>
 
 namespace ogdf {
 
@@ -105,6 +106,11 @@ namespace ogdf {
  *    }<br>
  * </code>
  *
+ *
+ *  \b Internal \b Library \b Logging:
+ *  Internal Libaries (as, e.g., Abacus) can use their own, global, set of logging functions.
+ *  Its LogLevels are parallel and independent of the global LogLevel, but its logging is automatically
+ *  turned off whenever the (global/static) Logger is in statistics-mode.
  */
 
 class OGDF_EXPORT Logger {
@@ -130,11 +136,15 @@ public:
 		m_loglevel(l), m_logmode(m) {}
 
 	// USAGE //////////////////////////////////////
+	//! returns true if such an lout command will result in text being printed
+	bool is_lout(Level l = LL_DEFAULT) const {
+		return ((!m_globalstatisticmode && m_logmode==LM_GLOBAL) || m_logmode==LM_GLOBALLOG)
+						? ( (l >= m_globalloglevel) ? true : false )
+						: ( (m_logmode==LM_LOG && l >= m_loglevel && l >= m_minimumloglevel) ? true : false );
+	}
 	//! stream for logging-output (local)
 	std::ostream& lout(Level l = LL_DEFAULT) const {
-		return ((!m_globalstatisticmode && m_logmode==LM_GLOBAL) || m_logmode==LM_GLOBALLOG)
-				? ( (l >= m_globalloglevel) ? *world : nirvana )
-				: ( (m_logmode==LM_LOG && l >= m_loglevel && l >= m_minimumloglevel) ? *world : nirvana );
+		return (is_lout(l)) ? *world : nirvana;
 	}
 	//! stream for statistic-output (local)
 	std::ostream& sout() const {
@@ -146,9 +156,13 @@ public:
 	}
 
 	// STATIC USAGE ///////////////////////////////
+	//! returns true if such an slout command will result in text being printed
+	static bool is_slout(Level l = LL_DEFAULT) {
+		return ((!m_globalstatisticmode) && l >= m_globalloglevel) ? true : false;
+	}
 	//! stream for logging-output (global)
 	static std::ostream& slout(Level l = LL_DEFAULT) {
-		return ((!m_globalstatisticmode) && l >= m_globalloglevel) ? *world : nirvana;
+		return (is_slout(l)) ? *world : nirvana;
 	}
 	//! stream for statistic-output (global)
 	static std::ostream& ssout() {
@@ -156,6 +170,21 @@ public:
 	}
 	//! stream for forced output (global)
 	static std::ostream& sfout() {
+		return *world;
+	}
+
+	// STATIC INTERNAL_LIBRARY_USAGE ///////////////////////////////
+	//! stream for logging-output (global; used by internal libraries, e.g. Abacus)
+	//! returns true if such an ilout command will result in text being printed
+	static bool is_ilout(Level l = LL_DEFAULT) {
+		return ((!m_globalstatisticmode) && l >= m_globallibraryloglevel) ? true : false;
+	}
+	static std::ostream& ilout(Level l = LL_DEFAULT) {
+		return (is_ilout(l)) ? *world : nirvana;
+	}
+
+	//! stream for forced output (global; used by internal libraries, e.g. Abacus)
+	static std::ostream& ifout() {
 		return *world;
 	}
 
@@ -178,15 +207,28 @@ public:
 	}
 
 	// GLOBAL //////////////////////////////////////
-	//! gives the local log-level
+	//! gives the global log-level
 	static Level globalLogLevel() { return m_globalloglevel; }
 	//! sets the global log-level
-	static void globalLogLevel(Level l) { if(l>=m_minimumloglevel) m_globalloglevel = l; }
+	static void globalLogLevel(Level l) {
+		m_globalloglevel = l;
+		if( m_globalloglevel < m_minimumloglevel )
+			m_minimumloglevel = m_globalloglevel;
+	}
+
+	//! gives the internal-library log-level
+	static Level globalInternalLibraryLogLevel() { return m_globallibraryloglevel; }
+	//! sets the internal-library log-level
+	static void globalInternalLibraryLogLevel(Level l) { m_globallibraryloglevel = l; }
 
 	//! gives the globally minimally required log-level
 	static Level globalMinimumLogLevel() { return m_minimumloglevel; }
 	//! sets the globally minimally required log-level
-	static void globalMinimumLogLevel(Level l) { if(l<=m_globalloglevel) m_minimumloglevel = l; }
+	static void globalMinimumLogLevel(Level l) {
+		m_minimumloglevel = l;
+		if( m_globalloglevel < m_minimumloglevel )
+			m_globalloglevel = m_minimumloglevel;
+	}
 
 	//! returns true if we are globally in statistic mode
 	static bool globalStatisticMode() { return m_globalstatisticmode; }
@@ -197,7 +239,7 @@ public:
 	static void setWorldStream(std::ostream& o) { world = &o; }
 
 	// EFFECTIVE //////////////////////////////////////
-	//! obtain the effective log-level for the Logger-object (i.e., resolve the depenancies on the global settings)
+	//! obtain the effective log-level for the Logger-object (i.e., resolve the dependencies on the global settings)
 	Level effectiveLogLevel() const {
 		if(m_logmode==LM_GLOBAL || m_logmode==LM_GLOBALLOG)
 			return m_globalloglevel;
@@ -216,6 +258,7 @@ private:
 	static std::ostream* world;
 
 	static Level m_globalloglevel;
+	static Level m_globallibraryloglevel;
 	static Level m_minimumloglevel;
 	static bool m_globalstatisticmode;
 

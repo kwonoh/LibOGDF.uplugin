@@ -1,9 +1,9 @@
 /*
- * $Revision: 2523 $
+ * $Revision: 2802 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-02 20:59:27 +0200 (Mon, 02 Jul 2012) $
+ *   $Date: 2012-10-11 13:55:26 +0200 (Thu, 11 Oct 2012) $
  ***************************************************************/
 
 /** \file
@@ -51,14 +51,14 @@
 #define OGDF_MULTILEVEL_LAYOUT_H
 
 
-#include "ogdf/basic/NodeArray.h"
-#include "ogdf/basic/GraphAttributes.h"
-#include "ogdf/energybased/multilevelmixer/ModularMultilevelMixer.h"
-#include "ogdf/energybased/multilevelmixer/InitialPlacer.h"
-#include "ogdf/energybased/multilevelmixer/ScalingLayout.h"
-#include "ogdf/packing/ComponentSplitterLayout.h"
-#include "ogdf/basic/PreprocessorLayout.h"
-#include "ogdf/basic/Constraints.h"
+#include <ogdf/basic/NodeArray.h>
+#include <ogdf/basic/GraphAttributes.h>
+#include <ogdf/energybased/multilevelmixer/ModularMultilevelMixer.h>
+#include <ogdf/energybased/multilevelmixer/InitialPlacer.h>
+#include <ogdf/energybased/multilevelmixer/ScalingLayout.h>
+#include <ogdf/packing/ComponentSplitterLayout.h>
+#include <ogdf/basic/PreprocessorLayout.h>
+#include <ogdf/basic/Constraints.h>
 
 namespace ogdf {
 

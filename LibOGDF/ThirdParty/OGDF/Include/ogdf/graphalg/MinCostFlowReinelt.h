@@ -1,9 +1,9 @@
 /*
- * $Revision: 2523 $
+ * $Revision: 2963 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-02 20:59:27 +0200 (Mon, 02 Jul 2012) $
+ *   $Date: 2012-11-05 14:17:50 +0100 (Mon, 05 Nov 2012) $
  ***************************************************************/
 
 /** \file
@@ -51,7 +51,6 @@
 
 
 #include <ogdf/module/MinCostFlowModule.h>
-#include <limits.h>
 
 
 namespace ogdf {
@@ -83,7 +82,7 @@ public:
 		EdgeArray<int> &flow,			  // computed flow
 		NodeArray<int> &dual);            // computed dual variables
 
-	int infinity() const { return INT_MAX; }
+	int infinity() const { return numeric_limits<int>::max(); }
 
 private:
 
@@ -156,7 +155,6 @@ private:
 
 	int nn;                /*number of original nodes*/
 	int mm;                /*number of original arcs*/
-
 };
 
 

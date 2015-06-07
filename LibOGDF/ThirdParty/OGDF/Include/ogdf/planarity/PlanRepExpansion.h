@@ -1,9 +1,9 @@
 /*
- * $Revision: 2523 $
+ * $Revision: 2963 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-02 20:59:27 +0200 (Mon, 02 Jul 2012) $
+ *   $Date: 2012-11-05 14:17:50 +0100 (Mon, 05 Nov 2012) $
  ***************************************************************/
 
 /** \file
@@ -262,7 +262,7 @@ public:
 	void unsplit(edge eIn, edge eOut);
 
 	//! Removes edge \a e from the planarized expansion.
-	void delCopy(edge e);
+	virtual void delEdge(edge e);
 
 	//! Embeds the planarized expansion; returns true iff it is planar.
 	bool embed();

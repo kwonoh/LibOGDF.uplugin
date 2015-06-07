@@ -1,9 +1,9 @@
 /*
- * $Revision: 2523 $
+ * $Revision: 2643 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-02 20:59:27 +0200 (Mon, 02 Jul 2012) $
+ *   $Date: 2012-07-19 16:52:10 +0200 (Thu, 19 Jul 2012) $
  ***************************************************************/
 
 /** \file
@@ -48,7 +48,7 @@
 #define OGDF_CONSTRAINTS_H
 
 #include <ogdf/basic/Graph.h>
-#include <ogdf/basic/String.h>
+#include <ogdf/basic/Hashing.h>
 
 
 namespace ogdf {
@@ -67,7 +67,7 @@ private:
 	ListIterator<Constraint *> listIt;
 
 protected:
-	String m_Name;
+	string m_Name;
 	/* */
 	bool m_UserDisabled;
 
@@ -105,12 +105,12 @@ public:
 
 	static int getStaticType() { return 0; }
 
-	void setName(String text) { m_Name = text; }
+	void setName(const string &text) { m_Name = text; }
 
-	String getName() { return m_Name; }
+	const string &getName() { return m_Name; }
 
 	//DEBUG
-	virtual bool buildFromOgml(XmlTagObject * constraintTag, Hashing <String, node> * nodes);
+	virtual bool buildFromOgml(XmlTagObject * constraintTag, Hashing <string, node> * nodes);
 	virtual bool storeToOgml(int id, ostream & os, int indentStep);
 	//static void generateIndent(char ** indent, const int & indentSize);
 
@@ -197,9 +197,9 @@ class ConstraintManager
 {
 public:
 
-	static Constraint *createConstraintByName(const Graph &G, String *name);
+	static Constraint *createConstraintByName(const Graph &G, string *name);
 
-	static String getClassnameOfConstraint(Constraint *c);
+	static string getClassnameOfConstraint(Constraint *c);
 
 	OGDF_NEW_DELETE
 };

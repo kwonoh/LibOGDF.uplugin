@@ -1,9 +1,9 @@
 /*
- * $Revision: 2584 $
+ * $Revision: 4000 $
  *
  * last checkin:
- *   $Author: gutwenger $
- *   $Date: 2012-07-12 02:38:07 +0200 (Do, 12. Jul 2012) $
+ *   $Author: beyer $
+ *   $Date: 2014-03-28 20:18:18 +0100 (Fri, 28 Mar 2014) $
  ***************************************************************/
 
 /** \file
@@ -40,12 +40,21 @@
  * \see  http://www.gnu.org/copyleft/gpl.html
  ***************************************************************/
 
-#ifndef DISJOINTSETS_H
-#define DISJOINTSETS_H
+#ifdef _MSC_VER
+#pragma once
+#endif
+
+#ifndef OGDF_DISJOINT_SETS_H
+#define OGDF_DISJOINT_SETS_H
+
+
+#include <ogdf/basic/basic.h>
+
 
 namespace ogdf {
 
-#define INTERMEDIATE_PARENT_CHECK
+#define OGDF_DISJOINT_SETS_INTERMEDIATE_PARENT_CHECK
+
 struct AnyOption {};
 
 /**
@@ -78,7 +87,7 @@ extern const char *interleavingOptionNames[];
 
 
 //! A Union/Find data structure for maintaining disjoint sets.
-template <class Element, LinkOptions linkOption = LI, CompressionOptions compressionOption = PS, InterleavingOptions interleavingOption = NI>
+template <LinkOptions linkOption = LI, CompressionOptions compressionOption = PS, InterleavingOptions interleavingOption = NI>
 class DisjointSets
 {
 private:
@@ -89,7 +98,6 @@ private:
 	// Arrays parents, elements, parameters, siblings map a set id to its properties.
 
 	int *parents; //!< Maps set id to parent set id.
-	Element *elements; //!< Maps set id to element.
 	int *parameters; //!< Maps set id to rank/size.
 	int *siblings; //!< Maps set id to sibling set id.
 
@@ -115,7 +123,7 @@ private:
 	bool quickUnion(LinkOption<NL>,InterleavingOption<IR0>,int set1,int set2);
 
 public:
-	//! Cretes an empty DisjointSets structure.
+	//! Creates an empty DisjointSets structure.
 	/**
 	* \param maxNumberOfElements Expected number of Elements.
 	*/
@@ -125,7 +133,6 @@ public:
 		this->numberOfElements=0;
 		this->maxNumberOfElements = maxNumberOfElements;
 		this->parents = new int[this->maxNumberOfElements];
-		this->elements = new Element[this->maxNumberOfElements];
 		this->parameters = (linkOption==LR || linkOption==LS) ? new int[this->maxNumberOfElements] : 0;
 		this->siblings = (compressionOption==CO) ? new int[this->maxNumberOfElements] : 0;
 	}
@@ -133,7 +140,6 @@ public:
 	~DisjointSets()
 	{
 		delete [] this->parents;
-		delete [] this->elements;
 		if (this->parameters != 0) delete [] this->parameters;
 		if (this->siblings != 0) delete [] this->siblings;
 	}
@@ -161,12 +167,11 @@ public:
 		return set;
 	}
 
-	//! Initializes a singleton set containing \a element.
+	//! Initializes a singleton set.
 	/**
-	* \param element Element.
 	* \return Set id of the initialized singleton set.
 	*/
-	int makeSet(Element element)
+	int makeSet()
 	{
 		if (this->numberOfElements==this->maxNumberOfElements)
 		{
@@ -174,11 +179,6 @@ public:
 			this->parents = new int[this->maxNumberOfElements * 2];
 			memcpy(this->parents,parents,sizeof(int)*this->maxNumberOfElements);
 			delete [] parents;
-
-			Element *elements=this->elements;
-			this->elements = new Element[this->maxNumberOfElements*2];
-			memcpy(this->elements,elements,sizeof(Element)*this->maxNumberOfElements);
-			delete [] elements;
 
 			if (this->parameters != 0)
 			{
@@ -200,7 +200,6 @@ public:
 		this->numberOfSets++;
 		int id = this->numberOfElements++;
 		this->parents[id]=id;
-		this->elements[id]=element;
 		//Initialize size/ rank/ sibling.
 		if (linkOption == LS) this->parameters[id]=1;
 		else if (linkOption == LR) this->parameters[id]=0;
@@ -254,8 +253,8 @@ public:
 
 
 //find
-template <class Element, LinkOptions linkOption, CompressionOptions compressionOption, InterleavingOptions interleavingOption>
-int DisjointSets<Element,linkOption,compressionOption,interleavingOption>::find(CompressionOption<PC>,int set)
+template <LinkOptions linkOption, CompressionOptions compressionOption, InterleavingOptions interleavingOption>
+int DisjointSets<linkOption,compressionOption,interleavingOption>::find(CompressionOption<PC>,int set)
 {
 	int parent = parents[set];
 	if (set==parent)
@@ -270,8 +269,8 @@ int DisjointSets<Element,linkOption,compressionOption,interleavingOption>::find(
 	}
 }
 
-template <class Element, LinkOptions linkOption, CompressionOptions compressionOption, InterleavingOptions interleavingOption>
-int DisjointSets<Element,linkOption,compressionOption,interleavingOption>::find(CompressionOption<PH>,int set)
+template <LinkOptions linkOption, CompressionOptions compressionOption, InterleavingOptions interleavingOption>
+int DisjointSets<linkOption,compressionOption,interleavingOption>::find(CompressionOption<PH>,int set)
 {
 	while (set!=parents[set])
 	{
@@ -283,8 +282,8 @@ int DisjointSets<Element,linkOption,compressionOption,interleavingOption>::find(
 	return set;
 }
 
-template <class Element, LinkOptions linkOption, CompressionOptions compressionOption, InterleavingOptions interleavingOption>
-int DisjointSets<Element,linkOption,compressionOption,interleavingOption>::find(CompressionOption<PS>,int set)
+template <LinkOptions linkOption, CompressionOptions compressionOption, InterleavingOptions interleavingOption>
+int DisjointSets<linkOption,compressionOption,interleavingOption>::find(CompressionOption<PS>,int set)
 {
 	int parent = parents[set];
 	int grandParent = parents[parent];
@@ -298,8 +297,8 @@ int DisjointSets<Element,linkOption,compressionOption,interleavingOption>::find(
 	return parent;
 }
 
-template <class Element, LinkOptions linkOption, CompressionOptions compressionOption, InterleavingOptions interleavingOption>
-int DisjointSets<Element,linkOption,compressionOption,interleavingOption>::find(CompressionOption<R1>,int set)
+template <LinkOptions linkOption, CompressionOptions compressionOption, InterleavingOptions interleavingOption>
+int DisjointSets<linkOption,compressionOption,interleavingOption>::find(CompressionOption<R1>,int set)
 {
 	int root = set;
 	set = parents[root];
@@ -314,25 +313,25 @@ int DisjointSets<Element,linkOption,compressionOption,interleavingOption>::find(
 	return set;
 }
 
-template <class Element, LinkOptions linkOption, CompressionOptions compressionOption, InterleavingOptions interleavingOption>
-int DisjointSets<Element,linkOption,compressionOption,interleavingOption>::find(CompressionOption<NF>,int set)
+template <LinkOptions linkOption, CompressionOptions compressionOption, InterleavingOptions interleavingOption>
+int DisjointSets<linkOption,compressionOption,interleavingOption>::find(CompressionOption<NF>,int set)
 {
 	while (set!=parents[set]) set=parents[set];
 	return set;
 }
 
-template <class Element, LinkOptions linkOption, CompressionOptions compressionOption, InterleavingOptions interleavingOption>
-int DisjointSets<Element,linkOption,compressionOption,interleavingOption>::find(CompressionOption<CO>,int set)
+template <LinkOptions linkOption, CompressionOptions compressionOption, InterleavingOptions interleavingOption>
+int DisjointSets<linkOption,compressionOption,interleavingOption>::find(CompressionOption<CO>,int set)
 {
 	return parents[set];
 }
 
 
 //quickUnion
-template <class Element, LinkOptions linkOption, CompressionOptions compressionOption, InterleavingOptions interleavingOption>
-bool DisjointSets<Element,linkOption,compressionOption,interleavingOption>::quickUnion(AnyOption,InterleavingOption<NI>,int set1,int set2)
+template <LinkOptions linkOption, CompressionOptions compressionOption, InterleavingOptions interleavingOption>
+bool DisjointSets<linkOption,compressionOption,interleavingOption>::quickUnion(AnyOption,InterleavingOption<NI>,int set1,int set2)
 {
-#ifdef INTERMEDIATE_PARENT_CHECK
+#ifdef OGDF_DISJOINT_SETS_INTERMEDIATE_PARENT_CHECK
 	if (parents[set1]==parents[set2]) return false;
 #endif
 	set1 = find(set1);
@@ -345,10 +344,10 @@ bool DisjointSets<Element,linkOption,compressionOption,interleavingOption>::quic
 	return false;
 }
 
-template <class Element, LinkOptions linkOption, CompressionOptions compressionOption, InterleavingOptions interleavingOption>
-bool DisjointSets<Element,linkOption,compressionOption,interleavingOption>::quickUnion(LinkOption<NL>,InterleavingOption<IR0>,int set1,int set2)
+template <LinkOptions linkOption, CompressionOptions compressionOption, InterleavingOptions interleavingOption>
+bool DisjointSets<linkOption,compressionOption,interleavingOption>::quickUnion(LinkOption<NL>,InterleavingOption<IR0>,int set1,int set2)
 {
-#ifdef INTERMEDIATE_PARENT_CHECK
+#ifdef OGDF_DISJOINT_SETS_INTERMEDIATE_PARENT_CHECK
 	if (parents[set1]==parents[set2]) return false;
 #endif
 	int root = set2;
@@ -379,8 +378,8 @@ bool DisjointSets<Element,linkOption,compressionOption,interleavingOption>::quic
 	}
 }
 
-template <class Element, LinkOptions linkOption, CompressionOptions compressionOption, InterleavingOptions interleavingOption>
-bool DisjointSets<Element,linkOption,compressionOption,interleavingOption>::quickUnion(LinkOption<LI>,InterleavingOption<Rem>,int set1,int set2)
+template <LinkOptions linkOption, CompressionOptions compressionOption, InterleavingOptions interleavingOption>
+bool DisjointSets<linkOption,compressionOption,interleavingOption>::quickUnion(LinkOption<LI>,InterleavingOption<Rem>,int set1,int set2)
 {
 	int r_x = set1; int r_y = set2;
 	int p_r_x =parents[r_x];
@@ -413,10 +412,10 @@ bool DisjointSets<Element,linkOption,compressionOption,interleavingOption>::quic
 	return false;
 }
 
-template <class Element, LinkOptions linkOption, CompressionOptions compressionOption, InterleavingOptions interleavingOption>
-bool DisjointSets<Element,linkOption,compressionOption,interleavingOption>::quickUnion(LinkOption<LI>,InterleavingOption<IPSPC>,int set1,int set2)
+template <LinkOptions linkOption, CompressionOptions compressionOption, InterleavingOptions interleavingOption>
+bool DisjointSets<linkOption,compressionOption,interleavingOption>::quickUnion(LinkOption<LI>,InterleavingOption<IPSPC>,int set1,int set2)
 {
-#ifdef INTERMEDIATE_PARENT_CHECK
+#ifdef OGDF_DISJOINT_SETS_INTERMEDIATE_PARENT_CHECK
 	if (parents[set1]==parents[set2]) return false;
 #endif
 	int set = set1;
@@ -465,8 +464,8 @@ bool DisjointSets<Element,linkOption,compressionOption,interleavingOption>::quic
 	}
 }
 
-template <class Element, LinkOptions linkOption, CompressionOptions compressionOption, InterleavingOptions interleavingOption>
-bool DisjointSets<Element,linkOption,compressionOption,interleavingOption>::quickUnion(LinkOption<LR>,InterleavingOption<TvL>,int set1,int set2)
+template <LinkOptions linkOption, CompressionOptions compressionOption, InterleavingOptions interleavingOption>
+bool DisjointSets<linkOption,compressionOption,interleavingOption>::quickUnion(LinkOption<LR>,InterleavingOption<TvL>,int set1,int set2)
 {
 	int r_x = set1; int r_y = set2;
 	int p_r_x =parents[r_x];
@@ -508,8 +507,8 @@ bool DisjointSets<Element,linkOption,compressionOption,interleavingOption>::quic
 
 
 //link
-template <class Element, LinkOptions linkOption, CompressionOptions compressionOption, InterleavingOptions interleavingOption>
-int DisjointSets<Element,linkOption,compressionOption,interleavingOption>::link(LinkOption<LI>,int set1,int set2)
+template <LinkOptions linkOption, CompressionOptions compressionOption, InterleavingOptions interleavingOption>
+int DisjointSets<linkOption,compressionOption,interleavingOption>::link(LinkOption<LI>,int set1,int set2)
 {
 	if (set1<set2)
 	{
@@ -523,8 +522,8 @@ int DisjointSets<Element,linkOption,compressionOption,interleavingOption>::link(
 	}
 }
 
-template <class Element, LinkOptions linkOption, CompressionOptions compressionOption, InterleavingOptions interleavingOption>
-int DisjointSets<Element,linkOption,compressionOption,interleavingOption>::link(LinkOption<LR>,int set1,int set2)
+template <LinkOptions linkOption, CompressionOptions compressionOption, InterleavingOptions interleavingOption>
+int DisjointSets<linkOption,compressionOption,interleavingOption>::link(LinkOption<LR>,int set1,int set2)
 {
 	int parameter1 = parameters[set1];
 	int parameter2 = parameters[set2];
@@ -547,8 +546,8 @@ int DisjointSets<Element,linkOption,compressionOption,interleavingOption>::link(
 	}
 }
 
-template <class Element, LinkOptions linkOption, CompressionOptions compressionOption, InterleavingOptions interleavingOption>
-int DisjointSets<Element,linkOption,compressionOption,interleavingOption>::link(LinkOption<LS>,int set1,int set2)
+template <LinkOptions linkOption, CompressionOptions compressionOption, InterleavingOptions interleavingOption>
+int DisjointSets<linkOption,compressionOption,interleavingOption>::link(LinkOption<LS>,int set1,int set2)
 {
 	int parameter1 = parameters[set1];
 	int parameter2 = parameters[set2];
@@ -567,8 +566,8 @@ int DisjointSets<Element,linkOption,compressionOption,interleavingOption>::link(
 	}
 }
 
-template <class Element, LinkOptions linkOption, CompressionOptions compressionOption, InterleavingOptions interleavingOption>
-int DisjointSets<Element,linkOption,compressionOption,interleavingOption>::link(LinkOption<NL>,int set1,int set2)
+template <LinkOptions linkOption, CompressionOptions compressionOption, InterleavingOptions interleavingOption>
+int DisjointSets<linkOption,compressionOption,interleavingOption>::link(LinkOption<NL>,int set1,int set2)
 {
 	parents[set1]=set2;
 	return set2;

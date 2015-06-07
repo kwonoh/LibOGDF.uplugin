@@ -1,9 +1,9 @@
 /*
- * $Revision: 2523 $
+ * $Revision: 2963 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-02 20:59:27 +0200 (Mon, 02 Jul 2012) $
+ *   $Date: 2012-11-05 14:17:50 +0100 (Mon, 05 Nov 2012) $
  ***************************************************************/
 
 /** \file
@@ -54,28 +54,6 @@
 #include <new>
 
 
-//---------------------------------------------------------------------
-// configuration of memory-manager (can also be set by compiler flag)
-//
-// the good old pool allocator (not thread-safe)
-//#define OGDF_MEMORY_POOL_NTS
-//
-// just using malloc/free (thread-safe)
-//#define OGDF_MEMORY_MALLOC_TS
-//
-// new buffered-pool allocator per thread pool (thread-safe)
-//#define OGDF_MEMORY_POOL_TS
-//
-// default (nothing defined): depending on system / compiler
-//---------------------------------------------------------------------
-
-// By default, we use the non-thread safe variant on cygwin and g++ 3.x
-// since thread-local storage is not working there, and a thread-safe
-// pool allocator otherwise.
-#if !defined(OGDF_MEMORY_POOL_NTS) && !defined(OGDF_MEMORY_MALLOC_TS) && !defined(OGDF_MEMORY_POOL_TS)
-#define OGDF_MEMORY_POOL_TS
-#endif
-
 #include <ogdf/internal/basic/PoolMemoryAllocator.h>
 #include <ogdf/internal/basic/MallocMemoryAllocator.h>
 
@@ -88,7 +66,7 @@ static void *operator new(size_t nBytes) { \
 	if(OGDF_LIKELY(Alloc::checkSize(nBytes))) \
 		return Alloc::allocate(nBytes); \
 	else \
-	return MallocMemoryAllocator::allocate(nBytes); \
+	return ogdf::MallocMemoryAllocator::allocate(nBytes); \
 } \
 \
 static void operator delete(void *p, size_t nBytes) { \
@@ -96,7 +74,7 @@ static void operator delete(void *p, size_t nBytes) { \
 		if(OGDF_LIKELY(Alloc::checkSize(nBytes))) \
 			Alloc::deallocate(nBytes, p); \
 		else \
-			MallocMemoryAllocator::deallocate(nBytes, p); \
+			ogdf::MallocMemoryAllocator::deallocate(nBytes, p); \
 	} \
 } \
 static void *operator new(size_t, void *p) { return p; } \
@@ -115,7 +93,7 @@ static void operator delete(void *, void *) { }
 #define OGDF_NEW_DELETE OGDF_MM(OGDF_ALLOCATOR)
 
 //! Creates new and delete operators in a class using the malloc memory allocator.
-#define OGDF_MALLOC_NEW_DELETE OGDF_MM(MallocMemoryAllocator)
+#define OGDF_MALLOC_NEW_DELETE OGDF_MM(ogdf::MallocMemoryAllocator)
 
 } // namespace ogdf
 

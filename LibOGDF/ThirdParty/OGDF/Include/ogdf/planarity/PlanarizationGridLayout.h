@@ -1,9 +1,9 @@
 /*
- * $Revision: 2583 $
+ * $Revision: 3188 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-12 01:02:21 +0200 (Do, 12. Jul 2012) $
+ *   $Date: 2013-01-10 09:53:32 +0100 (Thu, 10 Jan 2013) $
  ***************************************************************/
 
 /** \file
@@ -52,8 +52,7 @@
 
 #include <ogdf/module/GridLayoutModule.h>
 #include <ogdf/basic/ModuleOption.h>
-#include <ogdf/module/PlanarSubgraphModule.h>
-#include <ogdf/module/EdgeInsertionModule.h>
+#include <ogdf/module/CrossingMinimizationModule.h>
 #include <ogdf/module/GridLayoutModule.h>
 #include <ogdf/module/CCLayoutPackModule.h>
 
@@ -101,13 +100,8 @@ namespace ogdf {
  *   <tr>
  *     <th><i>Option</i><th><i>Type</i><th><i>Default</i><th><i>Description</i>
  *   </tr><tr>
- *     <td><i>subgraph</i><td>PlanarSubgraphModule<td>FastPlanarSubgraph
- *     <td>The module for the computation of the planar subgraph.
- *   </tr><tr>
- *     <td><i>inserter</i><td>EdgeInsertionModule<td>FixedEmbeddingInserter
- *     <td>The module used for edge insertion which is applied in the second
- *     step of the planarization method. The edges not contained in the planar
- *     subgraph are re-inserted one-by-one, each with as few crossings as possible.
+ *     <td><i>crossMin</i><td>CrossingMinimizationModule<td>SubgraphPlanarizer
+ *     <td>The module used for the crossing minimization step.
  *   </tr><tr>
  *     <td><i>planarLayouter</i><td>GridLayoutPlanRepModule<td>MixedModelLayout
  *     <td>The planar layout algorithm used to compute a planar layout
@@ -151,27 +145,11 @@ public:
 	 *  @{
 	 */
 
-	/**
-	 * \brief Sets the module option for the computation of the planar subgraph.
-	 *
-	 * The computation of a planar subgraph is the first step in the crossing
-	 * minimization procedure of the planarization approach.
-	 */
-	void setSubgraph(PlanarSubgraphModule *pSubgraph) {
-		m_subgraph.set(pSubgraph);
+	//! Sets the module option for crossing minimization.
+	void setCrossMin(CrossingMinimizationModule *pCrossMin) {
+		m_crossMin.set(pCrossMin);
 	}
 
-	/**
-	 * \brief Sets the module option for edge insertion.
-	 *
-	 * The edge insertion module is applied in the second step of the planarization
-	 * method. The edges not contained in the planar subgraph are re-inserted
-	 * one-by-one, each with as few crossings as possible. The edge insertion
-	 * module implements the whole second step, i.e., it inserts all edges.
-	 */
-	void setInserter(EdgeInsertionModule *pInserter) {
-		m_inserter.set(pInserter);
-	}
 
 	/**
 	 * \brief Sets the module option for the planar grid layout algorithm.
@@ -217,10 +195,7 @@ protected:
 
 private:
 	//! The module for computing a planar subgraph.
-	ModuleOption<PlanarSubgraphModule>    m_subgraph;
-
-	//! The module for edge re-insertion.
-	ModuleOption<EdgeInsertionModule>     m_inserter;
+	ModuleOption<CrossingMinimizationModule> m_crossMin;
 
 	//! The module for computing a planar grid layout.
 	ModuleOption<GridLayoutPlanRepModule> m_planarLayouter;

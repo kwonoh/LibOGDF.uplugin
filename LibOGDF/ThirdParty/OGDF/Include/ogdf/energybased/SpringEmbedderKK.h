@@ -1,9 +1,9 @@
 /*
- * $Revision: 2524 $
+ * $Revision: 3554 $
  *
  * last checkin:
- *   $Author: gutwenger $
- *   $Date: 2012-07-03 09:54:22 +0200 (Tue, 03 Jul 2012) $
+ *   $Author: beyer $
+ *   $Date: 2013-06-07 19:36:05 +0200 (Fri, 07 Jun 2013) $
  ***************************************************************/
 
 /** \file
@@ -121,23 +121,13 @@ public:
 	//! Currently, GA.doubleWeight is NOT used to allow simple
 	//! distinction of BFS/APSS. Precondition: Graph is connected.
 	void call(GraphAttributes& GA);
+
+	void call(GraphAttributes &GA, GraphConstraints & GC) { call(GA); }
+
 	//! Calls the layout algorithm for graph attributes \a GA
 	//! using values in eLength for distance computation.
 	//! Precondition: Graph is connected.
-#if defined(__APPLE__)
-#	pragma clang diagnostic push
-#	pragma clang diagnostic ignored "-Woverloaded-virtual"
-#elif defined(_WIN32)
-#	pragma warning( push )
-#	pragma warning( disable : 4263 )
-#	pragma warning( disable : 4264 )
-#endif
 	void call(GraphAttributes& GA, const EdgeArray<double>& eLength);
-#if defined(__APPLE__)
-#	pragma clang diagnostic pop
-#elif defined(_WIN32)
-#	pragma warning( pop )
-#endif
 
 	//! Sets the value for the stop tolerance, below which the
 	//! system is regarded stable (balanced) and the optimization stopped
@@ -301,11 +291,11 @@ private:
 	static const double minVal;
 	static const double desMinLength; //!< Defines minimum desired edge length.
 	//! Smaller values are treated as zero
-	static const int maxVal = INT_MAX; //! defines infinite upper bound for iteration number
+	static const int maxVal; //! defines infinite upper bound for iteration number
 
 	double allpairsspBFS(const Graph& G, NodeArray< NodeArray<double> >& distance);
 	double allpairssp(const Graph& G, const EdgeArray<double>& eLengths,
-		NodeArray< NodeArray<double> >& distance,	const double threshold = DBL_MAX);
+		NodeArray< NodeArray<double> >& distance,	const double threshold = numeric_limits<double>::max());
 };//SpringEmbedderKK
 
 //Things that potentially could be added

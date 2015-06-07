@@ -1,9 +1,9 @@
 /*
- * $Revision: 2523 $
+ * $Revision: 3005 $
  *
  * last checkin:
- *   $Author: gutwenger $
- *   $Date: 2012-07-02 20:59:27 +0200 (Mon, 02 Jul 2012) $
+ *   $Author: chimani $
+ *   $Date: 2012-11-12 14:19:48 +0100 (Mon, 12 Nov 2012) $
  ***************************************************************/
 
 /** \file
@@ -58,21 +58,21 @@
 #include <ogdf/internal/cluster/Cluster_EdgeVar.h>
 #include <ogdf/internal/cluster/MaxCPlanar_Master.h>
 
-#include <abacus/constraint.h>
+#include <ogdf/abacus/constraint.h>
 
 namespace ogdf {
 
 
-class MinimalClusterConnection : public ABA_CONSTRAINT {
+class MinimalClusterConnection : public abacus::Constraint {
 
 public:
 
-	MinimalClusterConnection(ABA_MASTER *master, List<nodePair> &edges);
+	MinimalClusterConnection(abacus::Master *master, List<nodePair> &edges);
 
 	virtual ~MinimalClusterConnection();
 
 	// Computes and returns the coefficient for the given variable
-	virtual double coeff(ABA_VARIABLE *v);
+	virtual double coeff(const abacus::Variable *v) const;
 
 private:
 

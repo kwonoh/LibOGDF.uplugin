@@ -1,9 +1,9 @@
 /*
- * $Revision: 2593 $
+ * $Revision: 3550 $
  *
  * last checkin:
- *   $Author: gutwenger $
- *   $Date: 2012-07-15 15:33:53 +0200 (So, 15. Jul 2012) $
+ *   $Author: beyer $
+ *   $Date: 2013-06-07 14:16:24 +0200 (Fri, 07 Jun 2013) $
  ***************************************************************/
 
 /** \file
@@ -307,7 +307,6 @@ void makeParallelFreeUndirected(
 	SListConstIterator<edge> it = edges.begin();
 	edge ePrev = *it++, e;
 	bool bAppend = true;
-	int  counter = 0;
 	while(it.valid())
 	{
 		e = *it++;
@@ -741,29 +740,62 @@ OGDF_EXPORT void topologicalNumbering(const Graph &G, NodeArray<int> &num);
 OGDF_EXPORT int strongComponents(const Graph& G, NodeArray<int>& component);
 
 
+//! Makes the digraph \a G bimodal.
+/**
+ * The implementation splits all non-bimodal vertices into two vertices.
+ *
+ * @param G is the input graph.
+ * @param newEdges is the list containing the new edges.
+ *
+ */
+OGDF_EXPORT void makeBimodal(Graph &G, List<edge> &newEdges);
+
+
+//! Makes the digraph \a G bimodal.
+/**
+ * The implementation splits all non-bimodal vertices into two vertices.
+ *
+ * @param G is the input graph.
+ */
+inline void makeBimodal(Graph &G) {
+	List<edge> dummy;
+	makeBimodal(G, dummy);
+}
+
 
 //---------------------------------------------------------
 // Methods for trees and forests
 //---------------------------------------------------------
 
-//! Returns true iff \a G is a free forest, i.e. contains no undirected cycle.
+//! Returns true iff \a G is an forest, i.e. contains no undirected cycle.
 /**
  * @param G is the input graph.
  * @return true if \ G is contains no undirected cycle, false otherwise.
  */
 OGDF_EXPORT bool isFreeForest(const Graph &G);
 
+//! Returns true iff \a G is a tree, i.e. contains no undirected
+//  cycle and is connected
+/**
+ * @param G is the input graph.
+ * @return true if \a G is a tree, false otherwise.
+ */
+inline bool isTree(const Graph &G)
+{
+	return (G.numberOfNodes() == G.numberOfEdges() + 1) && isConnected(G);
+}
 
-//! Returns true iff \a G represents a forest, i.e., a collection of rooted trees.
+
+//! Returns true iff \a G represents a forest, i.e., a collection of arborescences.
 /**
  * @param G     is the input graph.
- * @param roots is assigned the list of root nodes of the trees in the forest.
+ * @param roots is assigned the list of root nodes of the arborescences in the forest.
  * @return true if \a G represents a forest, false otherwise.
  */
 OGDF_EXPORT bool isForest(const Graph& G, List<node> &roots);
 
 
-//! Returns true iff \a G represents a forest, i.e. a collection of rooted trees.
+//! Returns true iff \a G represents a forest, i.e. a collection of arborescences.
 /**
  * @param G is the input graph.
  * @return true if \a G represents a forest, false otherwise.
@@ -781,17 +813,17 @@ inline bool isForest(const Graph &G)
  * @param root is assigned the root node (if true is returned).
  * @return true if \a G represents a tree, false otherwise.
  */
-OGDF_EXPORT bool isTree (const Graph& G, node &root);
+OGDF_EXPORT bool isArborescence (const Graph& G, node &root);
 
 
-//! Returns true iff \a G represents a tree
+//! Returns true iff \a G represents an arborescence
 /**
  * @param G    is the input graph.
- * @return true if \a G represents a tree, false otherwise.
+ * @return true if \a G represents a arborescence, false otherwise.
  */
-inline bool isTree(const Graph &G) {
+inline bool isArborescence(const Graph &G) {
 	node root;
-	return isTree(G,root);
+	return isArborescence(G,root);
 }
 
 

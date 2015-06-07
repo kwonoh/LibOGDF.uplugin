@@ -1,9 +1,9 @@
 /*
- * $Revision: 2523 $
+ * $Revision: 3832 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-02 20:59:27 +0200 (Mon, 02 Jul 2012) $
+ *   $Date: 2013-11-13 11:16:27 +0100 (Wed, 13 Nov 2013) $
  ***************************************************************/
 
 /** \file
@@ -51,6 +51,7 @@
 #include <ogdf/basic/EdgeArray.h>
 #include <ogdf/basic/Array2D.h>
 #include <ogdf/layered/Hierarchy.h>
+#include <ogdf/layered/HierarchyLevels.h>
 
 namespace ogdf
 {
@@ -67,7 +68,7 @@ public:
 		m_bigM = 10000;
 	}
 
-	CrossingsMatrix(const Hierarchy &H);
+	CrossingsMatrix(const HierarchyLevels &levels);
 
 	~CrossingsMatrix() { }
 
@@ -85,7 +86,7 @@ public:
 	void init(Level &L);
 
 	//! SimDraw init
-	void init(Level &L, const EdgeArray<unsigned int> *edgeSubGraph);
+	void init(Level &L, const EdgeArray<__uint32> *edgeSubGraphs);
 
 private:
 	Array<int> map;

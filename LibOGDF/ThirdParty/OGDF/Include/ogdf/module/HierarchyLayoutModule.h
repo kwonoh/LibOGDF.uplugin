@@ -1,9 +1,9 @@
 /*
- * $Revision: 2583 $
+ * $Revision: 3832 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-12 01:02:21 +0200 (Do, 12. Jul 2012) $
+ *   $Date: 2013-11-13 11:16:27 +0100 (Wed, 13 Nov 2013) $
  ***************************************************************/
 
 /** \file
@@ -53,7 +53,8 @@
 
 #include <ogdf/layered/Hierarchy.h>
 #include <ogdf/basic/GraphCopyAttributes.h>
-
+//#include <ogdf/layered/HierarchyLevels.h>
+#include <ogdf/layered/CrossingMinInterfaces.h>
 
 namespace ogdf {
 
@@ -72,12 +73,12 @@ public:
 
 	/**
 	 * \brief Computes a hierarchy layout of \a H in \a AGA
-	 * @param H is the input hierarchy.
+	 * @param levels is the input hierarchy.
 	 * @param GA is assigned the hierarchy layout.
 	 */
-	void call(const Hierarchy& H, GraphAttributes &GA) {
-		GraphCopyAttributes AGC(H,GA);
-		doCall(H,AGC);
+	void call(const HierarchyLevelsBase &levels, GraphAttributes &GA) {
+		GraphCopyAttributes AGC(levels.hierarchy(),GA);
+		doCall(levels,AGC);
 		AGC.transform();
 	}
 
@@ -107,14 +108,14 @@ public:
 
 
 	//! Adds bends to edges for avoiding crossings with nodes.
-	static void addBends(GraphCopyAttributes &AGC, Hierarchy &H);
+	//static void addBends(GraphCopyAttributes &AGC, HierarchyLevels &levels);
 
-	static void dynLayerDistance(GraphCopyAttributes &AGC, Hierarchy &H);
+	static void dynLayerDistance(GraphCopyAttributes &AGC, HierarchyLevelsBase &levels);
 
 private:
 
 	//! after calling, ci (cj) contains the number of nodes of level i (j=i-1) which overlap the edge (s,t)
-	static void overlap(GraphCopyAttributes &AGC, Hierarchy &H, node s, node t, int i, int &ci, int &cj);
+	static void overlap(GraphCopyAttributes &AGC, HierarchyLevelsBase &levels, node s, node t, int i, int &ci, int &cj);
 
 protected:
 	/**
@@ -122,10 +123,10 @@ protected:
 	 *
 	 * Must be implemented by derived classes.
 	 *
-	 * @param H is the input hierarchy.
-	 * @param AGC has to be assigned the hierarchy layout.
+	 * @param levels is the input hierarchy.
+	 * @param AGC    has to be assigned the hierarchy layout.
 	 */
-	virtual void doCall(const Hierarchy& H, GraphCopyAttributes &AGC) = 0;
+	virtual void doCall(const HierarchyLevelsBase &levels, GraphCopyAttributes &AGC) = 0;
 
 	OGDF_MALLOC_NEW_DELETE
 

@@ -1,9 +1,9 @@
 /*
- * $Revision: 2564 $
+ * $Revision: 2663 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-07 00:03:48 +0200 (Sa, 07. Jul 2012) $
+ *   $Date: 2012-07-24 11:21:20 +0200 (Tue, 24 Jul 2012) $
  ***************************************************************/
 
 /** \file
@@ -55,13 +55,12 @@
 #include <ogdf/basic/Stack.h>
 #include <ogdf/internal/cluster/ClusterPQContainer.h>
 
+
 namespace ogdf {
 
-class OGDF_EXPORT CconnectClusterPlanarEmbed {
-
-
+class OGDF_EXPORT CconnectClusterPlanarEmbed
+{
 public:
-
 
 	enum ccErrorCode {
 		none = 0,
@@ -70,7 +69,8 @@ public:
 		nonPlanar = 3,
 		nonCPlanar = 4
 	};
-	ccErrorCode errCode() {return m_errorCode;}
+
+	ccErrorCode errCode() { return m_errorCode; }
 
 
 	//*************************************************************************
@@ -83,10 +83,6 @@ public:
 	// Tests if a ClusterGraph is C-planar and embedds it.
 	virtual bool embed(ClusterGraph &C,Graph &G);
 
-	// Tests if a ClusterGraph is C-planar and embedds it.
-	// Specifies reason for non planarity
-	virtual bool embed(ClusterGraph &C,Graph &G, char (&code)[124]);
-
 
 private:
 
@@ -96,36 +92,36 @@ private:
 
 	bool preparation(Graph &subGraph,cluster &origCluster,node superSink);
 
-	bool doEmbed(Graph			 *biconComp,
-				 NodeArray<int>  &numbering,
-				 cluster		 &origCluster,
-				 node			  superSink,
-				 Graph			 &subGraph,
-			 	 EdgeArray<edge> &tableEdgesBiComp2SubGraph,
-				 EdgeArray<edge> &tableEdgesSubGraph2BiComp,
-				 NodeArray<node> &tableNodesBiComp2SubGraph);
+	bool doEmbed(
+		Graph			*biconComp,
+		NodeArray<int>  &numbering,
+		cluster			&origCluster,
+		node			superSink,
+		Graph			&subGraph,
+		EdgeArray<edge> &tableEdgesBiComp2SubGraph,
+		EdgeArray<edge> &tableEdgesSubGraph2BiComp,
+		NodeArray<node> &tableNodesBiComp2SubGraph);
 
-
-
-
-	void entireEmbed(Graph &biconComp,
-					 NodeArray<SListPure<adjEntry> > &entireEmbedding,
-					 NodeArray<SListIterator<adjEntry> > &adjMarker,
-					 NodeArray<bool> &mark,
-					 node v);
+	void entireEmbed(
+		Graph &biconComp,
+		NodeArray<SListPure<adjEntry> > &entireEmbedding,
+		NodeArray<SListIterator<adjEntry> > &adjMarker,
+		NodeArray<bool> &mark,
+		node v);
 
 	void recursiveEmbed(ClusterGraph &Ccopy,Graph &Gcopy);
 
 	void prepareParallelEdges(Graph &G);
 
 
-	void constructWheelGraph(ClusterGraph &C,
-							 Graph &G,
-							 cluster &parent,
-	 						 cluster &origCl,
-							 EmbedPQTree* T,
-							 EdgeArray<node> &outgoingTable,
-							 node superSink);
+	void constructWheelGraph(
+		ClusterGraph &C,
+		Graph &G,
+		cluster &parent,
+	 	cluster &origCl,
+		EmbedPQTree* T,
+		EdgeArray<node> &outgoingTable,
+		node superSink);
 
 	void hubControl(Graph &G,NodeArray<bool> &hubs);
 
@@ -133,9 +129,9 @@ private:
 
 	void copyEmbedding(ClusterGraph &Ccopy,Graph &Gcopy,ClusterGraph &C,Graph &G);
 
-//---------------------------------------------------------
-// private member variables for testing a cluster graph
-//---------------------------------------------------------
+	//---------------------------------------------------------
+	// private member variables for testing a cluster graph
+	//---------------------------------------------------------
 
 	// Stores for every cluster the PQTree corresponding
 	// to the biconnected component containing the outgoing
@@ -144,9 +140,6 @@ private:
 
 	//save errorcode for postprocessing if not c-planar
 	ccErrorCode m_errorCode;
-	// For debugging purposes. Stores the reason for
-	// non cluster planarity.
-	char errorCode[124];
 
 
 	//private Members for handling parallel edges
@@ -155,10 +148,9 @@ private:
 	int	m_parallelCount;
 
 
-
-//---------------------------------------------------------
-// private member variables for embedding a cluster graph
-//---------------------------------------------------------
+	//---------------------------------------------------------
+	// private member variables for embedding a cluster graph
+	//---------------------------------------------------------
 
 	ClusterGraph *m_instance; //The graph that has to be embedded
 
@@ -252,8 +244,6 @@ private:
 	// c. cluster does have no child clusters and no nodes;
 	// d. recursive version of c.
 	ClusterArray<bool> m_unsatisfiedCluster;
-
-
 };
 
 } // end namespace ogdf

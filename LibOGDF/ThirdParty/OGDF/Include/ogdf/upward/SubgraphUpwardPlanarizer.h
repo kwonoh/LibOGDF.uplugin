@@ -1,13 +1,13 @@
 /*
- * $Revision: 2524 $
+ * $Revision: 3188 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-03 09:54:22 +0200 (Tue, 03 Jul 2012) $
+ *   $Date: 2013-01-10 09:53:32 +0100 (Thu, 10 Jan 2013) $
  ***************************************************************/
 
  /** \file
- * \brief Declaration of class SubgraphPlanarizer.
+ * \brief Declaration of class SubgraphUpwardPlanarizer.
  *
  * \author Hoi-Ming Wong
  *

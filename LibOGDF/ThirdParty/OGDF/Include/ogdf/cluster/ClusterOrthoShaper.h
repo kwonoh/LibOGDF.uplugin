@@ -1,9 +1,9 @@
 /*
- * $Revision: 2564 $
+ * $Revision: 3340 $
  *
  * last checkin:
- *   $Author: gutwenger $
- *   $Date: 2012-07-07 00:03:48 +0200 (Sa, 07. Jul 2012) $
+ *   $Author: klein $
+ *   $Date: 2013-03-09 03:03:04 +0100 (Sat, 09 Mar 2013) $
  ***************************************************************/
 
 /** \file
@@ -68,13 +68,13 @@ public:
 												//nodes and faces
 
 	ClusterOrthoShaper() {
-		m_distributeEdges = true;  //try to distribute edges to all node sides
-		m_fourPlanar      = true;  //do not allow zero degree angles at high degree
-		m_allowLowZero    = false; //do allow zero degree at low degree nodes
-		m_multiAlign      = true;  //true;  //start/end side of multi edges match
-		m_traditional     = true;  //true;  //prefer 3/1 flow at degree 2 (false: 2/2)
-		m_deg4free        = false; //allow free angle assignment at degree four
-		m_align           = false; //align nodes on same hierarchy level
+		m_distributeEdges = true;  //!< try to distribute edges to all node sides
+		m_fourPlanar      = true;  //!< do not allow zero degree angles at high degree
+		m_allowLowZero    = false; //!< do allow zero degree at low degree nodes
+		m_multiAlign      = true;  //!< true;  //start/end side of multi edges match
+		m_traditional     = true;  //!< true;  //if set to true, prefer 3/1 flow at degree 2 (false: 2/2)
+		m_deg4free        = false; //!< if set to true, free angle assignment at degree four nodes allowed
+		m_align           = false; //!< if set to true, nodes are aligned on same hierarchy level
 		m_topToBottom     = defaultCost;     //bend costs depend on edges cluster depth
 	};
 
@@ -100,24 +100,24 @@ public:
 		bool fourPlanar = true);
 
 
-	// returns option distributeEdges
+	/// returns option distributeEdges
 	bool distributeEdges() { return m_distributeEdges; }
-	// sets option distributeEdges to b
+	/// sets option distributeEdges to b
 	void distributeEdges(bool b) { m_distributeEdges = b; }
 
-	// returns option multiAlign
+	/// returns option multiAlign
 	bool multiAlign() { return m_multiAlign; }
-	// sets option multiAlign to b
+	/// sets option multiAlign to b
 	void multiAlign(bool b) { m_multiAlign = b; }
 
-	// returns option traditional
+	/// returns option for traditional angle distribution
 	bool traditional() { return m_traditional; }
-	// sets option traditional to b
+	/// sets option traditional to b
 	void traditional(bool b) { m_traditional = b; }
 
-	//returns option deg4free
+	/// returns option for free angle assignment at degree four nodes
 	bool fixDegreeFourAngles() { return m_deg4free; }
-	//sets option deg4free
+	/// sets option for free angle assignment at degree four nodes
 	void fixDegreeFourAngles(bool b) { m_deg4free = b; }
 
 	//alignment of brothers in hierarchies

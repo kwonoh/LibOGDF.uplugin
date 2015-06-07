@@ -1,9 +1,9 @@
 /*
- * $Revision: 2564 $
+ * $Revision: 3840 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-07 00:03:48 +0200 (Sa, 07. Jul 2012) $
+ *   $Date: 2013-11-19 08:27:44 +0100 (Tue, 19 Nov 2013) $
  ***************************************************************/
 
 /** \file
@@ -40,12 +40,13 @@
  * \see  http://www.gnu.org/copyleft/gpl.html
  ***************************************************************/
 
+// must be included first here
+#include <ogdf/basic/basic.h>
+
+
 #ifdef _MSC_VER
 #pragma once
 #endif
-
-#include <stdio.h>
-#include <ogdf/basic/basic.h>
 
 
 #ifndef OGDF_EXCEPTIONS_H
@@ -67,9 +68,11 @@ namespace ogdf {
 #undef OGDF_THROW
 #endif
 
+
+
 #ifndef OGDF_THROW_WITH_INFO
-#define OGDF_THROW_PARAM(CLASS, PARAM) throw CLASS ( PARAM )
-#define OGDF_THROW(CLASS)              throw CLASS ( )
+#define OGDF_THROW_PARAM(CLASS, PARAM) cout<<flush,Logger::sfout()<<flush,throw CLASS ( PARAM )
+#define OGDF_THROW(CLASS)              cout<<flush,Logger::sfout()<<flush,throw CLASS ( )
 #else
 //! Replacement for \c throw.
 /**
@@ -79,14 +82,14 @@ namespace ogdf {
  * @param PARAM is an additional parameter (like the error code) required
  *        by the exception calls.
  */
-#define OGDF_THROW_PARAM(CLASS, PARAM) throw CLASS ( PARAM , __FILE__ , __LINE__ )
+#define OGDF_THROW_PARAM(CLASS, PARAM) cout<<flush,Logger::sfout()<<flush,throw CLASS ( PARAM , __FILE__ , __LINE__ )
 //! Replacement for \c throw.
 /**
  * This macro is used to throw an exception and pass the file name
  * and line number of the location in the source file.
  * @param CLASS is the name of the exception class.
  */
-#define OGDF_THROW(CLASS)              throw CLASS ( __FILE__ , __LINE__ )
+#define OGDF_THROW(CLASS)              cout<<flush,Logger::sfout()<<flush,throw CLASS ( __FILE__ , __LINE__ )
 #endif
 
 
@@ -108,7 +111,8 @@ namespace ogdf {
 		pvcClusterPlanar,     //!< graph is not c-planar
 		pvcNoCopy,            //!< graph is not a copy of the corresponding graph
 		pvcConnected,         //!< graph is not connected
-		pvcBiconnected,         //!< graph is not twoconnected
+		pvcBiconnected,       //!< graph is not twoconnected
+		pvcFull,         	  //!< datastructure is already full
 		pvcSTOP               // INSERT NEW CODES BEFORE pvcSTOP!
 	}; // enum PreconditionViolatedCode
 
@@ -127,6 +131,55 @@ namespace ogdf {
 		afcForbiddenCrossing,//!< crossing forbidden but necessary
 		afcTimelimitExceeded,//!< it took too long
 		afcNoSolutionFound,  //!< couldn't solve the problem
+		afcIndexOutOfBounds, //!< index out of bounds
+
+		// The following codes are used by Abacus (think about changing them to
+		// more error describing codes)
+		afcPrimalBound,
+		afcDualBound,
+		afcNotInteger,
+		afcBuffer,
+		afcAddVar,
+		afcSorter,
+		afcPhase,
+		afcActive,
+		afcNoSolution,
+		afcMakeFeasible,
+		afcGuarantee,
+		afcBranchingVariable,
+		afcStrategy,
+		afcCloseHalf,
+		afcStandardPool,
+		afcVariable,
+		afcLpIf,
+		afcLp,
+		afcBstack,
+		afcLpStatus,
+		afcBranchingRule,
+		afcFixSet,
+		afcLpSub,
+		afcString,
+		afcConstraint,
+		afcPool,
+		afcGlobal,
+		afcFsVarStat,
+		afcLpVarStat,
+		afcOsiIf,
+		afcConBranchRule,
+		afcTimer,
+		afcArray,
+		afcCsense,
+		afcBPrioQueue,
+		afcFixCand,
+		afcBHeap,
+		afcPoolslot,
+		afcSparVec,
+		afcConvar,
+		afcOstream,
+		afcHash,
+		afcParamaster,
+		afcInfeasCon,
+
 		afcSTOP              // INSERT NEW CODES BEFORE afcSTOP!
 	}; // enum AlgorithmFailureCode
 
@@ -210,6 +263,15 @@ namespace ogdf {
 	public:
 		//! Constructs a no standard comparer available exception.
 		NoStdComparerException(const char *file = NULL, int line = -1) : Exception(file, line) {}
+	};
+
+
+	//! %Exception thrown when a data type is not supported by a generic function.
+	class OGDF_EXPORT TypeNotSupportedException : public Exception {
+
+	public:
+		//! Constructs a type-not-supported exception.
+		TypeNotSupportedException(const char *file = NULL, int line = -1) : Exception(file, line) {}
 	};
 
 

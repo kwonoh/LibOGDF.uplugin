@@ -1,9 +1,9 @@
 /*
- * $Revision: 2583 $
+ * $Revision: 3833 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-12 01:02:21 +0200 (Do, 12. Jul 2012) $
+ *   $Date: 2013-11-13 11:23:15 +0100 (Wed, 13 Nov 2013) $
  ***************************************************************/
 
 /** \file
@@ -50,17 +50,20 @@
 #define OGDF_TWO_LAYER_CROSS_MIN_SIMDRAW_H
 
 
-#include <ogdf/module/TwoLayerCrossMin.h>
+#include <ogdf/module/LayerByLayerSweep.h>
 
 
 namespace ogdf {
 
 
-	class OGDF_EXPORT TwoLayerCrossMinSimDraw : public TwoLayerCrossMin
+	class OGDF_EXPORT TwoLayerCrossMinSimDraw : public LayerByLayerSweep
 	{
 	public:
 		//! Initializes a two-layer crossing minimization module.
-		TwoLayerCrossMinSimDraw() : TwoLayerCrossMin() { }
+		TwoLayerCrossMinSimDraw() : LayerByLayerSweep() { }
+
+		//! Returns a new instance of the two-layer crossing minimization module with the same option settings.
+		virtual TwoLayerCrossMinSimDraw *clone() const = 0;
 
 		/**
 		* \brief Performs crossing minimization for level \a L.
@@ -69,9 +72,11 @@ namespace ogdf {
 		*        neighbor level (fixed level) is determined by the hierarchy.
 		* @param esg points to an edge array which specifies to which subgraphs
 		*        an edge belongs; there are up to 32 possible subgraphs each of which
-		*        is represented by a bit of an <code>unsigned int</code>.
+		*        is represented by a bit of an <code>__uint32</code>.
 		*/
-		virtual void call(Level &L, const EdgeArray<unsigned int> *esg) = 0;
+		virtual void call(Level &L, const EdgeArray<__uint32> *esg) = 0;
+
+		void call(Level &L) = 0;
 	};
 
 

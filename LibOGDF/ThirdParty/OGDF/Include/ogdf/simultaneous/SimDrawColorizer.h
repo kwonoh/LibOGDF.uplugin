@@ -1,9 +1,9 @@
 /*
- * $Revision: 2528 $
+ * $Revision: 2771 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-03 23:05:08 +0200 (Tue, 03 Jul 2012) $
+ *   $Date: 2012-09-26 15:53:39 +0200 (Wed, 26 Sep 2012) $
  ***************************************************************/
 
 /** \file
@@ -153,7 +153,7 @@ namespace ogdf
 			~SimDrawColorScheme();
 
 			//! joins the different color components together
-			String getColor(int subGraphBits, int numberOfGraphs);
+			Color getColor(int subGraphBits, int numberOfGraphs);
 
 			//! sets the color component arrays according to colorschemeXS
 			void assignColScm(int numberOfGraphs);

@@ -1,9 +1,9 @@
 /*
- * $Revision: 2523 $
+ * $Revision: 3472 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-02 20:59:27 +0200 (Mon, 02 Jul 2012) $
+ *   $Date: 2013-04-29 15:52:12 +0200 (Mon, 29 Apr 2013) $
  ***************************************************************/
 
 /** \file
@@ -50,7 +50,7 @@
 
 
 
-#include <ogdf/planarity/PlanRepUML.h>
+#include <ogdf/basic/GraphCopy.h>
 #include <ogdf/basic/Module.h>
 #include <ogdf/basic/Logger.h>
 #include <ogdf/basic/Timeouter.h>
@@ -64,12 +64,45 @@ namespace ogdf {
  * \see PlanarizationLayout, PlanarizationGridLayout
  */
 class OGDF_EXPORT PlanarSubgraphModule : public Module, public Timeouter {
+
+	int m_maxThreads;	//!< The maximal number of used threads.
+
 public:
-	//! Initializes a planar subgraph module.
-	PlanarSubgraphModule() { }
+	//! Initializes a planar subgraph module (default constructor).
+	PlanarSubgraphModule() {
+#ifdef OGDF_MEMORY_POOL_NTS
+		m_maxThreads = 1;
+#else
+		m_maxThreads = System::numberOfProcessors();
+#endif
+	}
+
+	//! Initializes a planar subgraph module (copy constructor).
+	PlanarSubgraphModule(const PlanarSubgraphModule &psm) : Timeouter(psm) {
+		m_maxThreads = psm.m_maxThreads;
+	}
 
 	// destruction
 	virtual ~PlanarSubgraphModule() { }
+
+
+	/**
+	 * \brief Returns the set of edges \a delEdges which have to be deleted to obtain the planar subgraph.
+	 * @param G is the input graph.
+	 * @param cost are the costs of edges.
+	 * @param preferedEdges are edges that should be contained in the planar subgraph.
+	 * @param delEdges is the set of edges that need to be deleted to obtain the planar subgraph.
+	 * @param preferedImplyPlanar indicates that the edges \a preferedEdges induce a planar graph.
+	 */
+	ReturnType call(const Graph &G,
+		const EdgeArray<int> &cost,
+		const List<edge> &preferedEdges,
+		List<edge> &delEdges,
+		bool preferedImplyPlanar = false)
+	{
+		return doCall(G,preferedEdges,delEdges,&cost,preferedImplyPlanar);
+	}
+
 
 	/**
 	 * \brief Returns the set of edges \a delEdges which have to be deleted to obtain the planar subgraph.
@@ -144,6 +177,19 @@ public:
 	ReturnType callAndDelete(GraphCopy &GC, List<edge> &delOrigEdges) {
 		List<edge> preferedEdges;
 		return callAndDelete(GC,preferedEdges,delOrigEdges);
+	}
+
+	//! Returns a new instance of the planar subgraph module with the same option settings.
+	virtual PlanarSubgraphModule *clone() const = 0;
+
+	//! Returns the maximal number of used threads.
+	int maxThreads() const { return m_maxThreads; }
+
+	//! Sets the maximal number of used threads to \a n.
+	void maxThreads(int n) {
+#ifndef OGDF_MEMORY_POOL_NTS
+		m_maxThreads = n;
+#endif
 	}
 
 protected:

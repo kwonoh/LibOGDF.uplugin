@@ -1,9 +1,9 @@
 /*
- * $Revision: 2523 $
+ * $Revision: 3979 $
  *
  * last checkin:
- *   $Author: gutwenger $
- *   $Date: 2012-07-02 20:59:27 +0200 (Mon, 02 Jul 2012) $
+ *   $Author: beyer $
+ *   $Date: 2014-03-25 15:50:44 +0100 (Tue, 25 Mar 2014) $
  ***************************************************************/
 
 /** \file
@@ -41,6 +41,9 @@
  * \see  http://www.gnu.org/copyleft/gpl.html
  ***************************************************************/
 
+// must be included first here
+#include <ogdf/basic/basic.h>
+
 
 #ifdef _MSC_VER
 #pragma once
@@ -50,7 +53,6 @@
 #define OGDF_SYSTEM_H
 
 
-#include <ogdf/basic/basic.h>
 #if defined(OGDF_SYSTEM_OSX)
 #include <stdlib.h>
 #elif defined(OGDF_SYSTEM_UNIX) || defined(__MINGW32__)
@@ -164,25 +166,21 @@ enum CPUFeatureMask {
  */
 class OGDF_EXPORT System {
 
-	//friend class ::OgdfInitialization;
-
 public:
 	/**
-	 * @name Memory usage
-	 * These methods allow to query the amount of physical memory, as well as the
-	 * current memory usage by both the process and OGDF's internal memory manager.
+	 * @name Memory
+	 * These methods allow to allocate aligned memory and to query the amount of memory used.
 	 */
 	//@{
 
 	static void *alignedMemoryAlloc16(size_t size) {
-		size_t alignment = 16;
 #ifdef OGDF_SYSTEM_WINDOWS
-		return _aligned_malloc(size,alignment);
+		return _aligned_malloc(size, 16);
 #elif defined(OGDF_SYSTEM_OSX)
 		// malloc returns 16 byte aligned memory on OS X.
 		return malloc(size);
 #else
-		return memalign(alignment,size);
+		return memalign(16, size);
 #endif
 	}
 
@@ -272,6 +270,22 @@ public:
 	 */
 	static __int64 usedRealTime(__int64 &t);
 
+	//! Returns the current time point of the real time wall clock.
+	/**
+	 * The start point of time points is system specific. The differences of two time points
+	 * returned by this function represent elapsed real time in milliseconds.
+	 */
+	static __int64 realTime();
+
+
+	//@}
+	/**
+	 * @name Process information
+	 */
+	//@{
+
+	//! Returns the process ID of the current process.
+	static int getProcessID();
 
 	//@}
 	/**

@@ -1,9 +1,9 @@
 /*
- * $Revision: 2523 $
+ * $Revision: 3388 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-02 20:59:27 +0200 (Mon, 02 Jul 2012) $
+ *   $Date: 2013-04-10 14:56:08 +0200 (Wed, 10 Apr 2013) $
  ***************************************************************/
 
 /** \file
@@ -48,22 +48,20 @@
 #ifndef OGDF_MAX_CPLANAR_MASTER_H
 #define OGDF_MAX_CPLANAR_MASTER_H
 
-//#include <ogdf/timer.h>
 #include <ogdf/basic/GraphCopy.h>
 #include <ogdf/internal/cluster/Cluster_EdgeVar.h>
 #include <ogdf/internal/cluster/basics.h>
 #include <ogdf/basic/Logger.h>
 #include <ogdf/basic/ArrayBuffer.h>
 
-#include <abacus/string.h>
 
 namespace ogdf {
 
 
 
-class Master : public ABA_MASTER {
+class MaxCPlanarMaster : public abacus::Master {
 
-	friend class Sub;
+	friend class MaxCPlanarSub;
 
 	// Pointers to the given Clustergraph and underlying Graph are stored.
 	const ClusterGraph *m_C;
@@ -82,7 +80,7 @@ class Master : public ABA_MASTER {
 public:
 
 	// Construction and default values
-	Master(
+	MaxCPlanarMaster(
 		const ClusterGraph &C,
 		int heuristicLevel=1,
 		int heuristicRuns=2,
@@ -100,14 +98,13 @@ public:
 		bool checkCPlanar = false,   //just check c-planarity
 		int numAddVariables = 15,
 		double strongConstraintViolation = 0.3,
-		double strongVariableViolation = 0.3,
-		ABA_MASTER::OUTLEVEL ol=Silent);
+		double strongVariableViolation = 0.3);
 
 	// Destruction
-	virtual ~Master();
+	virtual ~MaxCPlanarMaster();
 
 	// Initialisation of the first Subproblem
-	virtual ABA_SUB *firstSub();
+	virtual abacus::Sub *firstSub();
 
 	// Returns the objective function coefficient of C-edges
 	double epsilon() const {return m_epsilon;}
@@ -135,26 +132,26 @@ public:
 	void getDeletedEdges(List<edge> &edges) const;
 
 	// Get parameters
-	const int getKIterations() const {return m_nKuratowskiIterations;}
-	const int getNSubdivisions() const {return m_nSubdivisions;}
-	const int getNKuratowskiSupportGraphs() const {return m_nKuratowskiSupportGraphs;}
-	const int getHeuristicLevel() const {return m_heuristicLevel;}
-	const int getHeuristicRuns() const {return m_nHeuristicRuns;}
-	const double getKBoundHigh() const {return m_kuratowskiBoundHigh;}
-	const double getKBoundLow() const {return m_kuratowskiBoundLow;}
-	const bool perturbation() const {return m_usePerturbation;}
-	const double branchingOEdgeSelectGap() const {return m_branchingGap;}
-	const double getHeuristicFractionalBound() const {return m_heuristicFractionalBound;}
-	const int numberOfHeuristicPermutationLists() const {return m_nHeuristicPermutationLists;}
-	const bool getMPHeuristic() const {return m_mpHeuristic;}
-	const bool getCheckCPlanar() const {return m_checkCPlanar;}
-	const int getNumAddVariables() const {return m_numAddVariables;}
-	const double getStrongConstraintViolation() const {return m_strongConstraintViolation;}
-	const double getStrongVariableViolation() const {return m_strongVariableViolation;}
+	int getKIterations() const {return m_nKuratowskiIterations;}
+	int getNSubdivisions() const {return m_nSubdivisions;}
+	int getNKuratowskiSupportGraphs() const {return m_nKuratowskiSupportGraphs;}
+	int getHeuristicLevel() const {return m_heuristicLevel;}
+	int getHeuristicRuns() const {return m_nHeuristicRuns;}
+	double getKBoundHigh() const {return m_kuratowskiBoundHigh;}
+	double getKBoundLow() const {return m_kuratowskiBoundLow;}
+	bool perturbation() const {return m_usePerturbation;}
+	double branchingOEdgeSelectGap() const {return m_branchingGap;}
+	double getHeuristicFractionalBound() const {return m_heuristicFractionalBound;}
+	int numberOfHeuristicPermutationLists() const {return m_nHeuristicPermutationLists;}
+	bool getMPHeuristic() const {return m_mpHeuristic;}
+	bool getCheckCPlanar() const {return m_checkCPlanar;}
+	int getNumAddVariables() const {return m_numAddVariables;}
+	double getStrongConstraintViolation() const {return m_strongConstraintViolation;}
+	double getStrongVariableViolation() const {return m_strongVariableViolation;}
 
 	// Read global constraint counter, i.e. the number of added constraints of specific type.
-	const int addedKConstraints() const {return m_nKConsAdded;}
-	const int addedCConstraints() const {return m_nCConsAdded;}
+	int addedKConstraints() const {return m_nKConsAdded;}
+	int addedCConstraints() const {return m_nCConsAdded;}
 
 
 	// Set parameters
@@ -187,9 +184,9 @@ public:
 
 	// Cut pools for connectivity and planarity
 	//! Returns cut pool for connectivity
-	ABA_STANDARDPOOL<ABA_CONSTRAINT, ABA_VARIABLE> *getCutConnPool() {return m_cutConnPool;}
+	abacus::StandardPool<abacus::Constraint, abacus::Variable> *getCutConnPool() {return m_cutConnPool;}
 	//! Returns cut pool for planarity
-	ABA_STANDARDPOOL<ABA_CONSTRAINT, ABA_VARIABLE> *getCutKuraPool() {return m_cutKuraPool;}
+	abacus::StandardPool<abacus::Constraint, abacus::Variable> *getCutKuraPool() {return m_cutKuraPool;}
 
 	//! Returns true if default cut pool is used. Otherwise, separate
 	//! connectivity and Kuratowski pools are generated and used.
@@ -233,7 +230,7 @@ private:
 	void clusterConnection(cluster c, GraphCopy &GC, double &upperBound);
 
 	// Computes the graphtheoretical distances of edges incident to node \a u.
-    void nodeDistances(node u, NodeArray<NodeArray<int> > &dist);
+	void nodeDistances(node u, NodeArray<NodeArray<int> > &dist);
 
 
 	// Parameters
@@ -258,8 +255,7 @@ private:
 	double m_strongConstraintViolation; // when do i consider a constraint strongly violated -> separate in first stage
 	double m_strongVariableViolation;   // when do i consider a variable strongly violated (red.cost) -> separate in first stage
 
-	ABA_MASTER::OUTLEVEL m_out; 		// Determines the output level of ABACUS
-	ABA_STRING *m_maxCpuTime;			// Time threshold for optimization
+	string *m_maxCpuTime;			// Time threshold for optimization
 
 
 	// The basic objective function coefficient for connection edges.
@@ -292,17 +288,17 @@ private:
 	double globalPrimalBound;
 	double globalDualBound;
 
-	inline double getDoubleTime(const ABA_TIMER* act) {
-    	long tempo = act->centiSeconds()+100*act->seconds()+6000*act->minutes()+360000*act->hours();
-    	return  ((double) tempo)/ 100.0;
+	inline double getDoubleTime(const Stopwatch* act) {
+		__int64 tempo = act->centiSeconds()+100*act->seconds()+6000*act->minutes()+360000*act->hours();
+		return  ((double) tempo)/ 100.0;
 	}
 
 	//number of calls of the fast max planar subgraph heuristic
 	const int m_fastHeuristicRuns;
 
 	//! Cut pools for connectivity and Kuratowski constraints
-	ABA_STANDARDPOOL< ABA_CONSTRAINT, ABA_VARIABLE > *m_cutConnPool; //!< Connectivity Cuts
-	ABA_STANDARDPOOL< ABA_CONSTRAINT, ABA_VARIABLE > *m_cutKuraPool; //!< Kuratowski Cuts
+	abacus::StandardPool< abacus::Constraint, abacus::Variable > *m_cutConnPool; //!< Connectivity Cuts
+	abacus::StandardPool< abacus::Constraint, abacus::Variable > *m_cutKuraPool; //!< Kuratowski Cuts
 
 	//! Defines if the ABACUS default cut pool or the separate Connectivity
 	//! and Kuratowski constraint pools are used
@@ -333,7 +329,7 @@ private:
 	bool m_porta;
 	//! writes coefficients of all orig and connect variables in constraint con into
 	//! emptied list coeffs
-	void getCoefficients(ABA_CONSTRAINT* con,  const List<EdgeVar *> & orig,
+	void getCoefficients(abacus::Constraint* con,  const List<EdgeVar *> & orig,
 		const List<EdgeVar* > & connect, List<double> & coeffs);
 };
 

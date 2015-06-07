@@ -1,9 +1,9 @@
 /*
- * $Revision: 2523 $
+ * $Revision: 4180 $
  *
  * last checkin:
- *   $Author: gutwenger $
- *   $Date: 2012-07-02 20:59:27 +0200 (Mon, 02 Jul 2012) $
+ *   $Author: klein $
+ *   $Date: 2014-06-05 16:01:57 +0200 (Thu, 05 Jun 2014) $
  ***************************************************************/
 
 /** \file
@@ -115,7 +115,7 @@ public:
 
 	// creates MultilevelGraph directly from GML file.
 	MultilevelGraph(istream &is);
-	MultilevelGraph(const String &filename);
+	MultilevelGraph(const char *filename);
 
 	NodeArray<double> &getRArray() { return m_radius; }
 	EdgeArray<double> &getWArray() { return m_weight; }
@@ -149,11 +149,11 @@ public:
 	void importAttributes(const GraphAttributes &GA);
 	void importAttributesSimple(const GraphAttributes &GA);
 	void reInsertGraph(MultilevelGraph &MLG);
-	void reInsertAll(std::vector<MultilevelGraph *> components);
+	void reInsertAll(std::vector<MultilevelGraph *> &components);
 	void copyNodeTo(node v, MultilevelGraph &MLG, std::map<node, node> &tempNodeAssociations, bool associate, int index = -1);
 	void copyEdgeTo(edge e, MultilevelGraph &MLG, std::map<node, node> &tempNodeAssociations, bool associate, int index = -1);
 	void writeGML(ostream &os);
-	void writeGML(const String &fileName);
+	void writeGML(const char *fileName);
 
 	// the original graph will be cleared to save Memory
 	std::vector<MultilevelGraph *> splitIntoComponents();

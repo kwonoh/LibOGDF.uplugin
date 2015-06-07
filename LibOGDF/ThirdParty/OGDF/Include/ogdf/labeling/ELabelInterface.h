@@ -1,9 +1,9 @@
 /*
- * $Revision: 2564 $
+ * $Revision: 3188 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-07 00:03:48 +0200 (Sa, 07. Jul 2012) $
+ *   $Date: 2013-01-10 09:53:32 +0100 (Thu, 10 Jan 2013) $
  ***************************************************************/
 
 /** \file
@@ -46,10 +46,9 @@
 #ifndef OGDF_E_LABEL_INTERFACE_H
 #define OGDF_E_LABEL_INTERFACE_H
 
-#include <ogdf/orthogonal/OrthoLayout.h>
 #include <ogdf/basic/GridLayout.h>
 #include <ogdf/basic/GridLayoutMapped.h>
-#include <ogdf/planarity/PlanRepUML.h>
+#include <ogdf/uml/PlanRepUML.h>
 
 
 namespace ogdf {
@@ -221,7 +220,7 @@ private:
 	edge m_edge;
 
 	//the label text
-	//String m_string;
+	//string m_string;
 
 
 };//edgelabel

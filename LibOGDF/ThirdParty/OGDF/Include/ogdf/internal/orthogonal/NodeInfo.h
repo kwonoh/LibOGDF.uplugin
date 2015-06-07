@@ -1,9 +1,9 @@
 /*
- * $Revision: 2564 $
+ * $Revision: 2808 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-07 00:03:48 +0200 (Sa, 07. Jul 2012) $
+ *   $Date: 2012-10-13 11:58:23 +0200 (Sat, 13 Oct 2012) $
  ***************************************************************/
 
 /** \file
@@ -230,7 +230,6 @@ public:
 		cage_x_size = m_ccoord[odSouth]-m_ccoord[odNorth];
 		cage_y_size = m_ccoord[odEast] - m_ccoord[odWest];
 	}
-	//		int compute_rc(box_side b) {cout<<"rc not yet implemented\n";exit(1);}
 
 	//set the unbend edges after (in) placement step
 	void set_l_upper(int d) { lu = d; }

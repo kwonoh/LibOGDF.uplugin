@@ -1,9 +1,9 @@
 /*
- * $Revision: 2615 $
+ * $Revision: 3074 $
  *
  * last checkin:
- *   $Author: gutwenger $
- *   $Date: 2012-07-16 14:23:36 +0200 (Mo, 16. Jul 2012) $
+ *   $Author: chimani $
+ *   $Date: 2012-11-29 11:01:06 +0100 (Thu, 29 Nov 2012) $
  ***************************************************************/
 
 /** \file
@@ -245,7 +245,7 @@ protected:
 		virtual void setSize(int numElements)
 		{
 			if (numElements > Array<T>::size())
-				Array<T>::grow(numElements-Array<T>::size(),m_initialValue);
+				Array<T>::resize(numElements,m_initialValue);
 		}
 
 		//! The graph the array is attached to.

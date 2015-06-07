@@ -1,15 +1,15 @@
 /*
- * $Revision: 2564 $
+ * $Revision: 3188 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-07 00:03:48 +0200 (Sa, 07. Jul 2012) $
+ *   $Date: 2013-01-10 09:53:32 +0100 (Thu, 10 Jan 2013) $
  ***************************************************************/
 
 /** \file
  * \brief Declaration of orthogonal representation of planar graphs.
  *
- * \author Carsten Gutwenger
+ * \author Carsten Gutwenger, Karsten Klein
  *
  * \par License:
  * This file is part of the Open Graph Drawing Framework (OGDF).
@@ -75,6 +75,9 @@ enum OrthoDir {
 	odWest      = 3,
 	odUndefined = 4
 };
+
+// Option bits for orthogonal layouts, UML alignment, compaction scaling, progressive shape computation
+enum UMLOpt {umlOpAlign = 0x0001, umlOpScale = 0x0002, umlOpProg = 0x0004};
 
 
 //---------------------------------------------------------
@@ -381,7 +384,9 @@ public:
 	// Precond.: The orth. repr. is normalized and contains no 0-degree angles
 	void dissect();
 	// same as dissect, attempting to save artificial nodes and allow preprocessing
-	void dissect2(PlanRepUML* PG = 0);
+	void dissect2(PlanRep* PG = 0);
+	// variant for use with simple PlanRep
+	void gridDissect(PlanRep* PG);
 	// undoes a previous dissect() by removing dissection edges and unsplitting
 	// vertices
 	void undissect(bool align = false);
@@ -418,7 +423,7 @@ public:
 	// is an orthogonal embedding realizing this shape (if 0-degree angles are
 	// present, the condition is necessary but not sufficient).
 	// If false is returned, error contains a description of the reason.
-	bool check(String &error);
+	bool check(string &error);
 
 
 	//

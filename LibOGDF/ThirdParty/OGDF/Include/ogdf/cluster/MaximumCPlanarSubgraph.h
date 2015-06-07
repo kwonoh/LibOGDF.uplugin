@@ -1,9 +1,9 @@
  /*
- * $Revision: 2523 $
+ * $Revision: 3388 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-02 20:59:27 +0200 (Mon, 02 Jul 2012) $
+ *   $Date: 2013-04-10 14:56:08 +0200 (Wed, 10 Apr 2013) $
  ***************************************************************/
 
 /** \file
@@ -89,30 +89,29 @@ protected:
 #else // USE_ABACUS
 
 public:
-    //! Construction
-    MaximumCPlanarSubgraph() : m_heuristicLevel(1),
-    						   m_heuristicRuns(1),
+	//! Construction
+	MaximumCPlanarSubgraph() : m_heuristicLevel(1),
+							   m_heuristicRuns(1),
 							   m_heuristicOEdgeBound(0.4),
 							   m_heuristicNPermLists(5),
 							   m_kuratowskiIterations(10),
-		                       m_subdivisions(10),
-		                       m_kSupportGraphs(10),
-		                       m_kuratowskiHigh(0.8),
-		                       m_kuratowskiLow(0.8),
+							   m_subdivisions(10),
+							   m_kSupportGraphs(10),
+							   m_kuratowskiHigh(0.8),
+							   m_kuratowskiLow(0.8),
 							   m_perturbation(false),
 							   m_branchingGap(0.4),
 							   m_time("00:20:00"),
 							   m_pricing(true),
 							   m_checkCPlanar(false),
-		                       m_numAddVariables(15),
-		                       m_strongConstraintViolation(0.3),
-		                       m_strongVariableViolation(0.3),
-		                       m_ol(ABA_MASTER::Silent),
-		                       m_totalTime(-1.0),
-		                       m_heurTime(-1.0),
-		                       m_lpTime(-1.0),
-		                       m_lpSolverTime(-1.0),
-		                       m_sepTime(-1.0),
+							   m_numAddVariables(15),
+							   m_strongConstraintViolation(0.3),
+							   m_strongVariableViolation(0.3),
+							   m_totalTime(-1.0),
+							   m_heurTime(-1.0),
+							   m_lpTime(-1.0),
+							   m_lpSolverTime(-1.0),
+							   m_sepTime(-1.0),
 							   m_totalWTime(-1.0),
 							   m_numCCons(-1),
 							   m_numKCons(-1),
@@ -147,8 +146,7 @@ public:
 	void setLowerRounding(double d) {m_kuratowskiLow = d;}
 	void setPerturbation(bool b) {m_perturbation = b;}
 	void setBranchingGap(double d) {m_branchingGap = d;}
-	void setTimeLimit(String s) {m_time = s.cstr();}
-	void setOutputLevel(ABA_MASTER::OUTLEVEL o) {m_ol = o;}
+	void setTimeLimit(string s) {m_time = s.c_str();}
 	void setPortaOutput(bool b) {m_portaOutput = b;}
 	void setPricing(bool b) { m_pricing = b;}
 	void setCheckCPlanar(bool b) {m_checkCPlanar = b;}
@@ -180,8 +178,8 @@ public:
 	int    getNumVars() {return m_numVars;}
 
 	//! Writes feasible solutions as a file in PORTA format
-	void writeFeasible(const String &filename, Master &master,
-		ABA_MASTER::STATUS &status);
+	void writeFeasible(const char *filename, MaxCPlanarMaster &master,
+			abacus::Master::STATUS &status);
 #ifdef OGDF_DEBUG
 	bool getSolByHeuristic(){return m_solByHeuristic;}
 #endif
@@ -206,9 +204,9 @@ protected:
 		List<edge> &delEdges,
 		List<nodePair> &addedEdges);
 
-	double getDoubleTime(const ABA_TIMER &act)
+	double getDoubleTime(const Stopwatch &act)
 	{
-		long tempo = act.centiSeconds()+100*act.seconds()+6000*act.minutes()+360000*act.hours();
+		__int64 tempo = act.centiSeconds()+100*act.seconds()+6000*act.minutes()+360000*act.hours();
 		return  ((double) tempo)/ 100.0;
 	}//getdoubletime
 
@@ -224,14 +222,12 @@ private:
 	double m_kuratowskiHigh, m_kuratowskiLow;
 	bool m_perturbation;
 	double m_branchingGap;
-	const char *m_time;
+	string m_time;
 	bool m_pricing;//<! Decides if pricing is used
 	bool m_checkCPlanar;//<! If set to true, only c-planarity is checked
 	int m_numAddVariables;
 	double m_strongConstraintViolation;
 	double m_strongVariableViolation;
-
-	ABA_MASTER::OUTLEVEL m_ol;
 
 	const char* getPortaFileName()
 	{
@@ -241,13 +237,13 @@ private:
 	{
 		return "porta.ieq";
 	}
-	const int maxConLength()
+	int maxConLength()
 	{
 		return 1024;
 	}
 	void outputCons(ofstream &os,
-		ABA_STANDARDPOOL<ABA_CONSTRAINT, ABA_VARIABLE> *connCon,
-		ABA_STANDARDPOOL<ABA_VARIABLE, ABA_CONSTRAINT> *stdVar);
+			abacus::StandardPool<abacus::Constraint, abacus::Variable> *connCon,
+			abacus::StandardPool<abacus::Variable, abacus::Constraint> *stdVar);
 
 	//results
 	double m_totalTime;  //<! Total computation time, returned from abacus

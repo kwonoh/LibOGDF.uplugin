@@ -1,9 +1,9 @@
 /*
- * $Revision: 2564 $
+ * $Revision: 2641 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-07 00:03:48 +0200 (Sa, 07. Jul 2012) $
+ *   $Date: 2012-07-19 15:21:36 +0200 (Thu, 19 Jul 2012) $
  ***************************************************************/
 
 /** \file
@@ -50,7 +50,6 @@
 
 
 #include <ogdf/basic/Hashing.h>
-#include <ogdf/basic/String.h>
 #include <ogdf/basic/GraphAttributes.h>
 #include <ogdf/cluster/ClusterGraph.h>
 #include <ogdf/cluster/ClusterGraphAttributes.h>
@@ -59,7 +58,7 @@
 namespace ogdf {
 
 
-typedef HashElement<String,int> *GmlKey;
+typedef HashElement<string,int> *GmlKey;
 enum GmlObjectType { gmlIntValue, gmlDoubleValue, gmlStringValue, gmlListBegin,
 	gmlListEnd, gmlKey, gmlEOF, gmlError };
 
@@ -108,12 +107,12 @@ struct OGDF_EXPORT GmlObject {
 // reads GML file and constructs GML parse tree
 //---------------------------------------------------------
 class OGDF_EXPORT GmlParser {
-	Hashing<String,int> m_hashTable; // hash table for tags
+	Hashing<string,int> m_hashTable; // hash table for tags
 	int m_num;
 
 	istream *m_is;
 	bool m_error;
-	String m_errorString;
+	string m_errorString;
 
 	char *m_rLineBuffer, *m_lineBuffer, *m_pCurrent, *m_pStore, m_cStore;
 
@@ -121,7 +120,7 @@ class OGDF_EXPORT GmlParser {
 	double m_doubleSymbol;
 	const char *m_stringSymbol;
 	GmlKey m_keySymbol;
-	String m_longString;
+	string m_longString;
 
 	GmlObject *m_objectTree; // root node of GML parse tree
 
@@ -156,7 +155,7 @@ public:
 	// true <=> an error in GML files has been detected
 	bool error() const { return m_error; }
 	// returns error message
-	const String &errorString() const { return m_errorString; }
+	const string &errorString() const { return m_errorString; }
 
 	// creates graph from GML parse tree
 	bool read(Graph &G);
@@ -212,7 +211,7 @@ private:
 	GmlObjectType getNextSymbol();
 	bool getLine();
 
-	GmlKey hashString(const String &str);
+	GmlKey hashString(const string &str);
 
 	GmlObject *getNodeIdRange(int &minId,int &maxId);
 	void readLineAttribute(GmlObject *object, DPolyline &dpl);

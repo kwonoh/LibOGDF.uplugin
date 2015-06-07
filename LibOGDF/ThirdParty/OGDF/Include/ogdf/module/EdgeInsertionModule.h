@@ -1,9 +1,9 @@
 /*
- * $Revision: 2615 $
+ * $Revision: 3367 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-16 14:23:36 +0200 (Mo, 16. Jul 2012) $
+ *   $Date: 2013-04-04 16:29:19 +0200 (Thu, 04 Apr 2013) $
  ***************************************************************/
 
 /** \file
@@ -48,205 +48,186 @@
 #define OGDF_EDGE_INSERTION_MODULE_H
 
 
-#include <ogdf/planarity/PlanRepUML.h>
 #include <ogdf/basic/Logger.h>
 #include <ogdf/basic/Module.h>
 #include <ogdf/basic/Timeouter.h>
+#include <ogdf/planarity/PlanRepLight.h>
 
 
 namespace ogdf {
 
-/**
- * \brief Interface for edge insertion algorithms
- *
- * \see SubgraphPlanarizer
- */
-class OGDF_EXPORT EdgeInsertionModule : public Module, public Timeouter {
-public:
-	//! The postprocessing method.
-	enum RemoveReinsertType {
-		rrNone,        //!< No postprocessing.
-		rrInserted,    //!< Postprocessing only with the edges that have to be inserted.
-		rrMostCrossed, //!< Postprocessing with the edges involved in the most crossings.
-		rrAll,         //!< Postproceesing with all edges.
-		rrIncremental, //!< Full postprocessing after each edge insertion.
-		rrIncInserted  //!< Postprocessing for (so far) inserted edges after each edge insertion.
+	//! Interface for edge insertion algorithms.
+	/**
+	 * \see SubgraphPlanarizer
+	 */
+	class OGDF_EXPORT EdgeInsertionModule : public Module, public Timeouter {
+	public:
+		//! Initializes an edge insertion module (default constructor).
+		EdgeInsertionModule() { }
+
+		//! Initializes an edge insertion module (copy constructor).
+		EdgeInsertionModule(const EdgeInsertionModule &eim) : Timeouter(eim) { }
+
+		//! Destructor.
+		virtual ~EdgeInsertionModule() { }
+
+		//! Returns a new instance of the edge insertion module with the same option settings.
+		virtual EdgeInsertionModule *clone() const = 0;
+
+		//! Inserts all edges in \a origEdges into \a pr.
+		/**
+		 * @param pr        is the input planarized representation and will also receive the result.
+		 * @param origEdges is the array of original edges (edges in the original graph of \a pr)
+		 *                  that have to be inserted.
+		 * @return the status of the result.
+		 */
+		ReturnType call(PlanRepLight &pr, const Array<edge> &origEdges) {
+			return doCall(pr, origEdges, 0, 0, 0);
+		}
+
+		//! Inserts all edges in \a origEdges with given costs into \a pr.
+		/**
+		 * @param pr        is the input planarized representation and will also receive the result.
+		 * @param costOrig  is an edge array containing the costs of original edges; edges in
+		 *                  \a pr without an original edge have zero costs.
+		 * @param origEdges is the array of original edges (edges in the original graph of \a pr)
+		 *                  that have to be inserted.
+		 * @return the status of the result.
+		 */
+		ReturnType call(PlanRepLight &pr,
+			const EdgeArray<int> &costOrig,
+			const Array<edge>    &origEdges)
+		{
+			return doCall(pr, origEdges, &costOrig, 0, 0);
+		}
+
+
+		//! Inserts all edges in \a origEdges with given costs and subgraphs (for simultaneous drawing) into \a pr.
+		/**
+		 * @param pr            is the input planarized representation and will also receive the result.
+		 * @param costOrig      is an edge array containing the costs of original edges; edges in
+		 *                      \a pr without an original edge have zero costs.
+		 * @param origEdges     is the array of original edges (edges in the original graph of \a pr)
+		 *                      that have to be inserted.
+		 * @param edgeSubGraphs is an edge array specifying to which subgraph an edge belongs.
+		 * @return the status of the result.
+		 */
+		ReturnType call(PlanRepLight &pr,
+			const EdgeArray<int>      &costOrig,
+			const Array<edge>         &origEdges,
+			const EdgeArray<__uint32> &edgeSubGraphs)
+		{
+			return doCall(pr, origEdges, &costOrig, 0, &edgeSubGraphs);
+		}
+
+
+		//! Inserts all edges in \a origEdges with given forbidden edges into \a pr.
+		/**
+		 * \pre No forbidden edge may be in \a origEdges.
+		 *
+		 * @param pr            is the input planarized representation and will also receive the result.
+		 * @param forbiddenOrig is an edge array indicating if an original edge is forbidden to be crossed.
+		 * @param origEdges     is the array of original edges (edges in the original graph of \a pr)
+		 *                      that have to be inserted.
+		 * @return the status of the result.
+		 */
+		ReturnType call(PlanRepLight &pr,
+			const EdgeArray<bool> &forbiddenOrig,
+			const Array<edge>     &origEdges)
+		{
+			return doCall(pr, origEdges, 0, &forbiddenOrig, 0);
+		}
+
+		//! Inserts all edges in \a origEdges with given costs and forbidden edges into \a pr.
+		/**
+		 * \pre No forbidden edge may be in \a origEdges.
+		 *
+		 * @param pr            is the input planarized representation and will also receive the result.
+		 * @param costOrig      is an edge array containing the costs of original edges; edges in
+		 *                      \a pr without an original edge have zero costs.
+		 * @param forbiddenOrig is an edge array indicating if an original edge is forbidden to be crossed.
+		 * @param origEdges     is the array of original edges (edges in the original graph of \a pr)
+		 *                      that have to be inserted.
+		 * @return the status of the result.
+		 */
+		ReturnType call(PlanRepLight &pr,
+			const EdgeArray<int>  &costOrig,
+			const EdgeArray<bool> &forbiddenOrig,
+			const Array<edge>     &origEdges)
+		{
+			return doCall(pr, origEdges, &costOrig, &forbiddenOrig, 0);
+		}
+
+
+		//! Inserts all edges in \a origEdges with given costs, forbidden edges, and subgraphs (for simultaneous drawing) into \a pr.
+		/**
+		 * \pre No forbidden edge may be in \a origEdges.
+		 *
+		 * @param pr            is the input planarized representation and will also receive the result.
+		 * @param costOrig      is an edge array containing the costs of original edges; edges in
+		 *                      \a pr without an original edge have zero costs.
+		 * @param forbiddenOrig is an edge array indicating if an original edge is forbidden to be crossed.
+		 * @param origEdges     is the array of original edges (edges in the original graph of \a pr)
+		 *                      that have to be inserted.
+		 * @param edgeSubGraphs is an edge array specifying to which subgraph an edge belongs.
+		 * @return the status of the result.
+		 */
+		ReturnType call(PlanRepLight &pr,
+			const EdgeArray<int>      &costOrig,
+			const EdgeArray<bool>     &forbiddenOrig,
+			const Array<edge>         &origEdges,
+			const EdgeArray<__uint32> &edgeSubGraphs)
+		{
+			return doCall(pr, origEdges, &costOrig, &forbiddenOrig, &edgeSubGraphs);
+		}
+
+
+		//! Inserts all edges in \a origEdges into \a pr, optionally costs, forbidden edges, and subgraphs (for simultaneous drawing) may be given.
+		/**
+		 * @param pr             is the input planarized representation and will also receive the result.
+		 * @param origEdges      is the array of original edges (edges in the original graph of \a pr)
+		 *                       that have to be inserted.
+		 * @param pCostOrig      points to an edge array containing the costs of original edges; edges in
+		 *                       \a pr without an original edge have zero costs. May be a 0-pointer, in which case all edges have cost 1.
+		 * @param pForbiddenOrig points to an edge array indicating whether an original edge is forbidden to be crossed.
+		 *                       May be a 0-pointer, in which case no edges are forbidden.
+		 * @param pEdgeSubGraphs points to an edge array specifying to which subgraph an edge belongs.
+		 *                       May be a 0-poiner, in which case no subgraphs / simultaneous embedding is used.
+		 * @return the status of the result.
+		 */
+		ReturnType callEx(
+			PlanRepLight              &pr,
+			const Array<edge>         &origEdges,
+			const EdgeArray<int>      *pCostOrig = 0,
+			const EdgeArray<bool>     *pForbiddenOrig = 0,
+			const EdgeArray<__uint32> *pEdgeSubGraphs = 0)
+		{
+			return doCall(pr, origEdges, pCostOrig, pForbiddenOrig, pEdgeSubGraphs);
+		}
+
+
+	protected:
+		//! Actual algorithm call that has to be implemented by derived classes.
+		/**
+		 * @param pr             is the input planarized representation and will also receive the result.
+		 * @param origEdges      is the array of original edges (edges in the original graph of \a pr)
+		 *                       that have to be inserted.
+		 * @param pCostOrig      points to an edge array containing the costs of original edges; edges in
+		 *                       \a pr without an original edge have zero costs.
+		 * @param pForbiddenOrig points to an edge array indicating whether an original edge is forbidden to be crossed.
+		 * @param pEdgeSubGraphs points to an edge array specifying to which subgraph an edge belongs.
+		 * @return the status of the result.
+		 */
+		virtual ReturnType doCall(
+			PlanRepLight              &pr,
+			const Array<edge>         &origEdges,
+			const EdgeArray<int>      *pCostOrig,
+			const EdgeArray<bool>     *pForbiddenOrig,
+			const EdgeArray<__uint32> *pEdgeSubGraphs) = 0;
+
+
+		OGDF_MALLOC_NEW_DELETE
 	};
-
-	//! Initializes an edge insertion module.
-	EdgeInsertionModule() { }
-	// destruction
-	virtual ~EdgeInsertionModule() { }
-
-	/**
-	 * \brief Inserts all edges in \a origEdges into \a PG.
-	 *
-	 * @param PG is the input planarized representation and will also receive the result.
-	 * @param origEdges is the list of original edges (edges in the original graph
-	 *        of \a PG) that have to be inserted.
-	 * \return the status of the result.
-	 */
-	ReturnType call(PlanRep &PG, const List<edge> &origEdges) {
-		return doCall(PG, origEdges, false, 0, 0, 0);
-	}
-
-	/**
-	 * \brief Inserts all edges in \a origEdges with given costs into \a PG.
-	 *
-	 * @param PG is the input planarized representation and will also receive the result.
-	 * @param costOrig is an edge array containing the costs of original edges; edges in
-	 *        \a PG without an original edge have zero costs.
-	 * @param origEdges is the list of original edges (edges in the original graph
-	 *        of \a PG) that have to be inserted.
-	 * \return the status of the result.
-	 */
-	ReturnType call(PlanRep &PG,
-		const EdgeArray<int> &costOrig,
-		const List<edge> &origEdges)
-	{
-		return doCall(PG, origEdges, false, &costOrig, 0, 0);
-	}
-
-	/**
-	 * \brief Inserts all edges in \a origEdges with given costs into \a PG, considering the Simultaneous Drawing Setting.
-	 *
-	 * @param PG is the input planarized representation and will also receive the result.
-	 * @param costOrig is an edge array containing the costs of original edges; edges in
-	 *        \a PG without an original edge have zero costs.
-	 * @param origEdges is the list of original edges (edges in the original graph
-	 *        of \a PG) that have to be inserted.
-	 * @param edgeSubGraph is an edge array specifying to which subgraph the edge belongs
-	 * \return the status of the result.
-	 */
-	ReturnType call(PlanRep &PG,
-		const EdgeArray<int> &costOrig,
-		const List<edge> &origEdges,
-		const EdgeArray<unsigned int> &edgeSubGraph)
-	{
-		return doCall(PG, origEdges, false, &costOrig, 0, &edgeSubGraph);
-	}
-
-	/**
-	 * \brief Inserts all edges in \a origEdges with given forbidden edges into \a PG.
-	 *
-	 * \pre No forbidden edge may be in \a origEdges.
-	 *
-	 * @param PG is the input planarized representation and will also receive the result.
-	 * @param forbidOriginal is an edge array indicating if an original edge is
-	 *        forbidden to be crossed.
-	 * @param origEdges is the list of original edges (edges in the original graph
-	 *        of \a PG) that have to be inserted.
-	 * \return the status of the result.
-	 */
-	ReturnType call(PlanRep &PG,
-		const EdgeArray<bool> &forbidOriginal,
-		const List<edge> &origEdges)
-	{
-		return doCall(PG, origEdges, false, 0, &forbidOriginal, 0);
-	}
-
-	/**
-	 * \brief Inserts all edges in \a origEdges with given costs and forbidden edges into \a PG.
-	 *
-	 * \pre No forbidden edge may be in \a origEdges.
-	 *
-	 * @param PG is the input planarized representation and will also receive the result.
-	 * @param costOrig is an edge array containing the costs of original edges; edges in
-	 *        \a PG without an original edge have zero costs.
-	 * @param forbidOriginal is an edge array indicating if an original edge is
-	 *        forbidden to be crossed.
-	 * @param origEdges is the list of original edges (edges in the original graph
-	 *        of \a PG) that have to be inserted.
-	 * \return the status of the result.
-	 */
-	ReturnType call(PlanRep &PG,
-		const EdgeArray<int>  &costOrig,
-		const EdgeArray<bool> &forbidOriginal,
-		const List<edge> &origEdges)
-	{
-		return doCall(PG, origEdges, false, &costOrig, &forbidOriginal, 0);
-	}
-
-	// inserts all edges in origEdges into PG using edge costs given by costOrig and edgeSubGraph;
-	// explicitly forbids crossing of those original edges for which
-	// forbidOriginal[eG] == true; no such edge may be in the list origEdges!
-	ReturnType call(PlanRep &PG,
-		const EdgeArray<int>  &costOrig,
-		const EdgeArray<bool> &forbidOriginal,
-		const List<edge> &origEdges,
-		const EdgeArray<unsigned int> &edgeSubGraph)
-	{
-		return doCall(PG, origEdges, false, &costOrig, &forbidOriginal, &edgeSubGraph);
-	}
-
-	/**
-	 * \brief Inserts all edges in \a origEdges into \a PG while avoiding crossings
-	 *        between generalizations.
-	 *
-	 * @param PG is the input planarized representation and will also receive the result.
-	 * @param origEdges is the list of original edges (edges in the original graph
-	 *        of \a PG) that have to be inserted.
-	 * \return the status of the result.
-	 */
-	ReturnType callForbidCrossingGens(PlanRepUML &PG,
-		const List<edge> &origEdges)
-	{
-		return doCall(PG, origEdges, true, 0, 0, 0);
-	}
-
-	/**
-	 * \brief Inserts all edges in \a origEdges with given costs into \a PG while
-	 *        avoiding crossings between generalizations.
-	 *
-	 * @param PG is the input planarized representation and will also receive the result.
-	 * @param costOrig is an edge array containing the costs of original edges; edges in
-	 *        \a PG without an original edge have zero costs.
-	 * @param origEdges is the list of original edges (edges in the original graph
-	 *        of \a PG) that have to be inserted.
-	 * \return the status of the result.
-	 */
-	ReturnType callForbidCrossingGens(PlanRepUML &PG,
-		const EdgeArray<int> &costOrig,
-		const List<edge> &origEdges)
-	{
-		return doCall(PG, origEdges, true, &costOrig, 0, 0);
-	}
-
-	//! Returns the number of postprocessing runs after the algorithm has been called.
-	virtual int runsPostprocessing() const {
-		return 0;
-	}
-
-
-#ifdef OGDF_DEBUG
-	bool checkCrossingGens(const PlanRepUML &PG);
-#endif
-
-protected:
-	/**
-	 * \brief Actual algorithm call that has to be implemented by derived classes.
-	 *
-	 * @param PG is the input planarized representation and will also receive the result.
-	 * @param origEdges is the list of original edges (edges in the original graph
-	 *        of \a PG) that have to be inserted.
-	 * @param forbidCrossingGens is true if generalizations are not allowed to cross each other.
-	 * @param costOrig points to an edge array containing the costs of original edges; edges in
-	 *        \a PG without an original edge have zero costs.
-	 * @param forbiddenEdgeOrig points to an edge array indicating if an original edge is
-	 *        forbidden to be crossed.
-	 * @param edgeSubGraph is used for simultaneous embedding and specifies for each edge
-	 *        to which subgraphs it belongs.
-	 */
-	virtual ReturnType doCall(PlanRep &PG,
-		const List<edge> &origEdges,
-		bool forbidCrossingGens,
-		const EdgeArray<int>  *costOrig,
-		const EdgeArray<bool> *forbiddenEdgeOrig,
-		const EdgeArray<unsigned int>  *edgeSubGraph) = 0;
-
-
-	OGDF_MALLOC_NEW_DELETE
-};
 
 } // end namespace ogdf
 

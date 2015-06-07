@@ -1,9 +1,9 @@
 /*
- * $Revision: 2615 $
+ * $Revision: 3975 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-16 14:23:36 +0200 (Mo, 16. Jul 2012) $
+ *   $Date: 2014-03-25 12:53:46 +0100 (Tue, 25 Mar 2014) $
  ***************************************************************/
 
 /** \file
@@ -54,6 +54,8 @@
 
 
 namespace ogdf {
+
+template<class E, class INDEX> class ArrayBuffer;
 
 //! Iteration over all indices \a i of an array \a A.
 /**
@@ -129,9 +131,12 @@ public:
 	}
 
 	//! Creates an array that is a copy of \a A.
-	Array(const Array<E> &A) {
+	Array(const Array<E,INDEX> &A) {
 		copy(A);
 	}
+
+	//! Creates an array that is a copy of \a A. The array-size is set to be the number of elements (not the capacity) of the buffer.
+	Array(const ArrayBuffer<E,INDEX> &A);
 
 	// destruction
 	~Array() {
@@ -260,21 +265,57 @@ public:
 	 */
 	void grow(INDEX add);
 
+	//! Resizes (enlarges or shrinks) the array to hold \a newSize elements and sets new elements to \a x.
+	/**
+	 *  Note: address of array entries in memory may change!
+	 * @param newSize is new size of the array
+	 * @param x is the inital value of all new elements.
+	 */
+	void resize(INDEX newSize, const E &x) { grow(newSize - size(), x); }
+
+	//! Resizes (enlarges or shrinks) the array to hold \a newSize elements.
+	/**
+	 *  Note: address of array entries in memory may change!
+	 * @param newSize is new size of the array
+	 */
+	void resize(INDEX newSize) { grow(newSize - size()); }
+
 	//! Randomly permutes the subarray with index set [\a l..\a r].
-	void permute (INDEX l, INDEX r);
+	void permute(INDEX l, INDEX r);
 
 	//! Randomly permutes the array.
 	void permute() {
 		permute(low(), high());
 	}
 
+#ifdef OGDF_HAVE_CPP11
+	//! Randomly permutes the subarray with index set [\a l..\a r].
+	template<class RNG>
+	void permute(INDEX l, INDEX r, RNG &rng);
+
+	//! Randomly permutes the array.
+	template<class RNG>
+	void permute(RNG &rng) {
+		permute(low(), high(), rng);
+	}
+#endif
+
 	//! Performs a binary search for element \a x.
 	/**
 	 * \pre The array must be sorted!
 	 * \return the index of the found element, and low()-1 if not found.
 	 */
-	inline int binarySearch (const E& x) const {
-		return binarySearch(x, StdComparer<E>());
+	inline int binarySearch (const E& e) const {
+		return binarySearch(low(), high(), e, StdComparer<E>());
+	}
+
+	//! Performs a binary search for element \a x within the array section [l..r] .
+	/**
+	 * \pre The array must be sorted!
+	 * \return the index of the found element, and low()-1 if not found.
+	 */
+	inline int binarySearch (INDEX l, INDEX r, const E& e) const {
+		return binarySearch(l, r, e, StdComparer<E>());
 	}
 
 	//! Performs a binary search for element \a x with comparer \a comp.
@@ -283,31 +324,34 @@ public:
 	 * \return the index of the found element, and low()-1 if not found.
 	 */
 	template<class COMPARER>
-	int binarySearch(const E& e, const COMPARER &comp) const {
-		if(size() < 2) {
-			if(size() == 1 && comp.equal(e, m_vpStart[low()]))
-				return low();
-			return low()-1;
-		}
-		int l = low();
-		int r = high();
-		do {
-			int m = (r + l)/2;
+	inline int binarySearch(const E& e, const COMPARER &comp) const {
+		return binarySearch(low(), high(), e, comp);
+	}
+
+	//! Performs a binary search for element \a x within the array section [l..r] with comparer \a comp.
+	/**
+	 * \pre The array must be sorted according to \a comp!
+	 * \return the index of the found element, and low()-1 if not found.
+	 */
+	template<class COMPARER>
+	INDEX binarySearch(INDEX l, INDEX r, const E& e, const COMPARER &comp) const {
+		if(r<l) return low()-1;
+		while(r>l) {
+			INDEX m = (r + l)/2;
 			if(comp.greater(e, m_vpStart[m]))
 				l = m+1;
 			else
 				r = m;
-		} while(r>l);
+		}
 		return comp.equal(e, m_vpStart[l]) ? l : low()-1;
 	}
-
 	//! Performs a linear search for element \a x.
 	/**
 	 * Warning: This method has linear running time!
 	 * Note that the linear search runs from back to front.
 	 * \return the index of the found element, and low()-1 if not found.
 	 */
-	inline int linearSearch (const E& e) const {
+	inline INDEX linearSearch (const E& e) const {
 		int i;
 		for(i = size(); i-->0;)
 			if(e == m_pStart[i]) break;
@@ -320,7 +364,7 @@ public:
 	 * \return the index of the found element, and low()-1 if not found.
 	 */
 	template<class COMPARER>
-	int linearSearch(const E& e, const COMPARER &comp) const {
+	INDEX linearSearch(const E& e, const COMPARER &comp) const {
 		int i;
 		for(i = size(); i-->0;)
 			if(comp.equal(e, m_pStart[i])) break;
@@ -359,6 +403,36 @@ public:
 		OGDF_ASSERT(low() <= r && r <= high())
 		if(l < r)
 			quicksortInt(m_vpStart+l,m_vpStart+r,comp);
+	}
+
+	//! Removes the components listed in \a ind by shifting the remaining components to the left.
+	/**
+	 * The "free" positions in the array at the end remain as they are.
+	 *
+	 * This function is mainly used by Abacus. Other uses are supposed to be rare.
+	 *
+	 * Memory management of the removed components must be
+	 * carefully implemented by the user of this function to avoid
+	 * memory leaks.
+	 *
+	 * @param ind The compenents being removed from the array.
+	 */
+	void leftShift(ArrayBuffer<INDEX, INDEX> &ind);
+
+	//! Removes the components listed in \a ind by shifting the remaining components to the left.
+	/**
+	 * The "free" positions in the array at the end are filled with \a val.
+	 *
+	 * Memory management of the removed components must be
+	 * carefully implemented by the user of this function to avoid
+	 * memory leaks.
+	 *
+	 * @param ind specifies the components that are removed from the array.
+	 * @param val is the value used to fill the positions that become free.
+	 */
+	void leftShift(ArrayBuffer<INDEX, INDEX> &ind, const E& val) {
+		leftShift(ind);
+		fill(high()-ind.size(),high(),val);
 	}
 
 	template<class F, class I> friend class ArrayBuffer; // for efficient ArrayBuffer::compact-method
@@ -421,20 +495,21 @@ private:
 
 
 
-
 // enlarges array by add elements and sets new elements to x
 template<class E, class INDEX>
 void Array<E,INDEX>::grow(INDEX add, const E &x)
 {
+	if(add==0) return;
+
 	INDEX sOld = size(), sNew = sOld + add;
 
 	// expand allocated memory block
 	if(m_pStart != 0) {
-		E *p = (E *)realloc(m_pStart, sNew*sizeof(E));
+		E *p = static_cast<E *>( realloc(m_pStart, sNew*sizeof(E)) );
 		if(p == 0) OGDF_THROW(InsufficientMemoryException);
 		m_pStart = p;
 	} else {
-		m_pStart = (E *)malloc(sNew*sizeof(E));
+		m_pStart = static_cast<E *>( malloc(sNew*sizeof(E)) );
 		if (m_pStart == 0) OGDF_THROW(InsufficientMemoryException);
 	}
 
@@ -451,15 +526,17 @@ void Array<E,INDEX>::grow(INDEX add, const E &x)
 template<class E, class INDEX>
 void Array<E,INDEX>::grow(INDEX add)
 {
+	if(add==0) return;
+
 	INDEX sOld = size(), sNew = sOld + add;
 
 	// expand allocated memory block
 	if(m_pStart != 0) {
-		E *p = (E *)realloc(m_pStart, sNew*sizeof(E));
+		E *p = static_cast<E *>( realloc(m_pStart, sNew*sizeof(E)) );
 		if(p == 0) OGDF_THROW(InsufficientMemoryException);
 		m_pStart = p;
 	} else {
-		m_pStart = (E *)malloc(sNew*sizeof(E));
+		m_pStart = static_cast<E *>( malloc(sNew*sizeof(E)) );
 		if (m_pStart == 0) OGDF_THROW(InsufficientMemoryException);
 	}
 
@@ -482,7 +559,7 @@ void Array<E,INDEX>::construct(INDEX a, INDEX b)
 		m_pStart = m_vpStart = m_pStop = 0;
 
 	} else {
-		m_pStart = (E *)malloc(s*sizeof(E));
+		m_pStart = static_cast<E *>( malloc(s*sizeof(E)) );
 		if (m_pStart == 0) OGDF_THROW(InsufficientMemoryException);
 
 		m_vpStart = m_pStart - a;
@@ -544,7 +621,7 @@ void Array<E,INDEX>::copy(const Array<E,INDEX> &array2)
 		E *pDest = m_pStop;
 		while(pDest > m_pStart)
 			//*--pDest = *--pSrc;
- 			new (--pDest) E(*--pSrc);
+			new (--pDest) E(*--pSrc);
 	}
 }
 
@@ -560,6 +637,26 @@ void Array<E,INDEX>::permute (INDEX l, INDEX r)
 	while(pI <= pStop)
 		std::swap(*pI++,*(pStart+randomNumber(0,r-l)));
 }
+
+
+#ifdef OGDF_HAVE_CPP11
+
+// permutes array a from a[l] to a[r] randomly
+template<class E, class INDEX>
+template<class RNG>
+void Array<E,INDEX>::permute (INDEX l, INDEX r, RNG &rng)
+{
+	OGDF_ASSERT(low() <= l && l <= high())
+	OGDF_ASSERT(low() <= r && r <= high())
+
+	std::uniform_int_distribution<int> dist(0,r-l);
+
+	E *pI = m_vpStart+l, *pStart = m_vpStart+l, *pStop = m_vpStart+r;
+	while(pI <= pStop)
+		std::swap( *pI++, *(pStart + dist(rng)) );
+}
+
+#endif
 
 
 // prints array a to output stream os using delimiter delim
@@ -579,6 +676,46 @@ ostream &operator<<(ostream &os, const ogdf::Array<E,INDEX> &a)
 {
 	print(os,a);
 	return os;
+}
+
+}
+
+#include <ogdf/basic/ArrayBuffer.h>
+
+namespace ogdf {
+
+template<class E, class INDEX>
+void Array<E,INDEX>::leftShift(ArrayBuffer<INDEX, INDEX> &ind) {
+	const INDEX nInd = ind.size();
+	if (nInd == 0) return;
+
+	//! shift all items up to the last element of \a ind to the left
+#ifdef OGDF_DEBUG
+	if(ind[0] < low() || ind[0] > high())
+		OGDF_THROW_PARAM(AlgorithmFailureException, afcIndexOutOfBounds);
+#endif
+
+	INDEX j, current = ind[0];
+	for (INDEX i = 0; i < nInd - 1; i++) {
+#ifdef OGDF_DEBUG
+		if(ind[i+1] < low() || ind[i+1] > high())
+			OGDF_THROW_PARAM(AlgorithmFailureException, afcIndexOutOfBounds);
+#endif
+
+		const INDEX last = ind[i+1];
+		for(j = ind[i]+1; j < last; j++)
+			m_vpStart[current++] = m_vpStart[j];
+	}
+
+	//! copy the rest of the buffer
+	for (j = ind[nInd - 1]+1; j < size(); j++)
+		m_vpStart[current++] = m_vpStart[j];
+}
+
+template<class E, class INDEX>
+Array<E,INDEX>::Array(const ArrayBuffer<E, INDEX> &A) {
+	construct(0,-1);
+	A.compactCopy(*this);
 }
 
 } // end namespace ogdf

@@ -1,9 +1,9 @@
 /*
- * $Revision: 2564 $
+ * $Revision: 3832 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-07 00:03:48 +0200 (Sa, 07. Jul 2012) $
+ *   $Date: 2013-11-13 11:16:27 +0100 (Wed, 13 Nov 2013) $
  ***************************************************************/
 
 /** \file
@@ -95,7 +95,7 @@ class OGDF_EXPORT FastHierarchyLayout : public HierarchyLayoutModule
 {
 protected:
 
-	void doCall(const Hierarchy& H,GraphCopyAttributes &AGC);
+	void doCall(const HierarchyLevelsBase &levels, GraphCopyAttributes &AGC);
 
 public:
 	//! Creates an instance of fast hierarchy layout.

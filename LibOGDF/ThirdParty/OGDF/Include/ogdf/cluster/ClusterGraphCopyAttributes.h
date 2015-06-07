@@ -1,9 +1,9 @@
 /*
- * $Revision: 2523 $
+ * $Revision: 3340 $
  *
  * last checkin:
- *   $Author: gutwenger $
- *   $Date: 2012-07-02 20:59:27 +0200 (Mon, 02 Jul 2012) $
+ *   $Author: klein $
+ *   $Date: 2013-03-09 03:03:04 +0100 (Sat, 09 Mar 2013) $
  ***************************************************************/
 
 /** \file
@@ -58,7 +58,7 @@
 namespace ogdf {
 
 /**
- * \brief Manages access on copy of an attributed clustered graph
+ * \brief Manages access on copy of an attributed clustered graph.
  */
 class OGDF_EXPORT ClusterGraphCopyAttributes {
 
@@ -112,11 +112,11 @@ public:
 
 	//! Returns coordinate of upper cluster boundary of original cluster \a cOrig.
 	double top(cluster cOrig) const {
-		return m_pACG->clusterYPos(cOrig);
+		return m_pACG->y(cOrig);
 	}
 	//! Returns coordinate of lower cluster boundary of original cluster \a cOrig.
 	double bottom(cluster cOrig) const {
-		return m_pACG->clusterYPos(cOrig) + m_pACG->clusterHeight(cOrig);
+		return m_pACG->y(cOrig) + m_pACG->height(cOrig);
 	}
 
 	//! Sets the position of the cluster rectangle for original cluster \a cOrig.
@@ -127,10 +127,10 @@ public:
 		double top,
 		double bottom)
 	{
-		m_pACG->clusterXPos  (cOrig) = left;
-		m_pACG->clusterYPos  (cOrig) = top;
-		m_pACG->clusterWidth (cOrig) = right-left;
-		m_pACG->clusterHeight(cOrig) = bottom-top;
+		m_pACG->x  (cOrig) = left;
+		m_pACG->y  (cOrig) = top;
+		m_pACG->width (cOrig) = right-left;
+		m_pACG->height(cOrig) = bottom-top;
 	}
 
 	void setClusterLeftRight(
@@ -138,8 +138,8 @@ public:
 		double left,
 		double right)
 	{
-		m_pACG->clusterXPos  (cOrig) = left;
-		m_pACG->clusterWidth (cOrig) = right-left;
+		m_pACG->x  (cOrig) = left;
+		m_pACG->width (cOrig) = right-left;
 	}
 
 	void setClusterTopBottom(
@@ -147,8 +147,8 @@ public:
 		double top,
 		double bottom)
 	{
-		m_pACG->clusterYPos  (cOrig) = top;
-		m_pACG->clusterHeight(cOrig) = bottom-top;
+		m_pACG->y  (cOrig) = top;
+		m_pACG->height(cOrig) = bottom-top;
 	}
 
 	//! Sets attributes for the original graph in attributed graph.

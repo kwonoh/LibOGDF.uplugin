@@ -1,9 +1,9 @@
 /*
- * $Revision: 2564 $
+ * $Revision: 3341 $
  *
  * last checkin:
- *   $Author: gutwenger $
- *   $Date: 2012-07-07 00:03:48 +0200 (Sa, 07. Jul 2012) $
+ *   $Author: klein $
+ *   $Date: 2013-03-09 03:07:12 +0100 (Sat, 09 Mar 2013) $
  ***************************************************************/
 
 /** \file
@@ -67,11 +67,12 @@ namespace ogdf {
 	class OGDF_EXPORT Clusterer : public ClustererModule
 	{
 		public:
-		//Constructor taking a graph G to be clustered
+		//! Constructor taking a graph G to be clustered
 		Clusterer(const Graph &G);
-		//Default constructor allowing to cluster multiple
-		//graphs with the same instance of the Clusterer
-		//Clusterer();
+		/**Default constructor allowing to cluster multiple
+		*graphs with the same instance of the Clusterer
+		*graphs */
+		Clusterer();
 		virtual ~Clusterer() {}
 
 		//The clustering can be done recursively (use single threshold

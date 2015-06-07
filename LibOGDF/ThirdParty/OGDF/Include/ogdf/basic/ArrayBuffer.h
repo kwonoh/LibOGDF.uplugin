@@ -1,9 +1,9 @@
 /*
- * $Revision: 2615 $
+ * $Revision: 3533 $
  *
  * last checkin:
- *   $Author: gutwenger $
- *   $Date: 2012-07-16 14:23:36 +0200 (Mo, 16. Jul 2012) $
+ *   $Author: beyer $
+ *   $Date: 2013-06-03 18:22:41 +0200 (Mon, 03 Jun 2013) $
  ***************************************************************/
 
 /** \file
@@ -48,15 +48,17 @@
 #define OGDF_ARRAY_BUFFER_H
 
 #include <ogdf/basic/Array.h>
+#include <cstring>
+
 
 namespace ogdf {
 
 //! An array that keeps track of the number of inserted elements; also usable as an efficient stack.
 /**
- * This is a growable array (with some initial size \a s) which starts out being empty. Using
+ * This is a (by default automatically growable) array (with some initial size \a s) which starts out being empty. Using
  * stack functions you can put elements into and out of it. The initial array size is automatically
- * expanded if neccessary, but never automatically shrunken. You may also access the elements it
- * contains using the []-operator. Tha valid indices are 0..(\a s - 1).
+ * expanded if neccessary (unless growing is forbidden), but never automatically shrunken. You may also access the elements it
+ * contains using the []-operator. The valid indices are 0..(\a s - 1).
  *
  * @tparam E     denotes the element type.
  * @tparam INDEX denotes the index type. The index type must be chosen such that it can
@@ -66,12 +68,20 @@ namespace ogdf {
  */
 template<class E, class INDEX = int>
 class ArrayBuffer : private Array<E, INDEX> {
-	INDEX num; //!< The number of elements in te buffer
+	INDEX num; //!< The number of elements in the buffer
+	bool growable;
 public:
-	//! Constructs an empty ArrayBuffer, without initial memory allocation.
-	ArrayBuffer() : Array<E,INDEX>(), num(0) {}
-	//! Constructs an empty ArrayBuffer, allocating memory for up to \a size elements.
-	explicit ArrayBuffer(INDEX size) : Array<E,INDEX>(size), num(0) {}
+	//! Creates an empty array buffer, without initial memory allocation.
+	ArrayBuffer() : Array<E,INDEX>(), num(0), growable(true) {}
+
+	//! Creates an empty array buffer, allocating memory for up to \a size elements; you may specify that the array should not grow automatically.
+	explicit ArrayBuffer(INDEX size, bool autogrow = true) : Array<E,INDEX>(size), num(0), growable(autogrow) {}
+
+	//! Creates an array buffer, initialized by the given array; you may specify that the array should not grow.
+	explicit ArrayBuffer(const Array<E,INDEX>& source, bool autogrow = true) : Array<E,INDEX>(source), num(0), growable(autogrow) {}
+
+	//! Creates an array buffer that is a copy of \a buffer.
+	ArrayBuffer(const ArrayBuffer<E,INDEX> &buffer) : Array<E,INDEX>(buffer), num(buffer.num), growable(buffer.growable) { }
 
 	//! Reinitializes the array, clearing it, and without initial memory allocation.
 	void init() { Array<E,INDEX>::init(); }
@@ -88,8 +98,12 @@ public:
 
 	//! Puts a new element in the buffer.
 	void push(E e) {
-		if(num == Array<E,INDEX>::size())
-			Array<E,INDEX>::grow(max(num,1)); // double the size
+		if (num == Array<E,INDEX>::size()) {
+			if (growable)
+				Array<E,INDEX>::grow(max(num,1)); // double the size
+			else
+				OGDF_THROW_PARAM(PreconditionViolatedException, pvcFull);
+		}
 		Array<E,INDEX>::operator[](num++) = e;
 	}
 
@@ -101,8 +115,20 @@ public:
 	//! Returns true if the buffer is empty, false otherwise.
 	bool empty() const { return !num; }
 
+	//! Returns true iff the buffer is non-growable and filled.
+	bool full() const { return (!growable) && (num == Array<E,INDEX>::size()); }
+
 	//! Returns number of elements in the buffer.
 	INDEX size() const { return num; }
+
+	//! Returns the current capacity of the datastructure. Note that this value is rather irrelevant if the array is growable.
+	INDEX capacity() const { return Array<E,INDEX>::size(); }
+
+	//! Returns whether the buffer will automatically expand if the initial size is insufficient
+	bool isGrowable() const { return growable; }
+
+	//! Sets the flag whether the buffer will automatically expand if the initial size is insufficient
+	void setGrowable(bool _growable) { growable = _growable; }
 
 	//! Returns a pointer to the first element.
 	E *begin() { return Array<E, INDEX>::begin(); }
@@ -139,6 +165,14 @@ public:
 		return Array<E,INDEX>::operator[](i);
 	}
 
+	//! Assignment operator.
+	ArrayBuffer<E,INDEX> &operator=(const ArrayBuffer<E,INDEX> &buffer) {
+		Array<E,INDEX>::operator=(buffer);
+		num      = buffer.num;
+		growable = buffer.growable;
+		return *this;
+	}
+
 	//! Generates a compact copy holding the current elements.
 	/**
 	 * Creates a copy of the ArrayBuffer and stores it into
@@ -149,7 +183,7 @@ public:
 	 * This method uses an elementwise operator=.
 	 * If you need a bitcopy of the buffer, use compactMemcpy()
 	 * instead; if you need a traditional array copy (using the Array's
-	 * copy-constructor) use compactCpyCon() instead.
+	 * copy-constructor) use compactCpycon() instead.
 	 */
 	void compactCopy(Array<E,INDEX>& A2) const {
 		OGDF_ASSERT(this != &A2);
@@ -170,7 +204,7 @@ public:
 	 *
 	 * This method uses the Array's copy constructur. If you
 	 * need a bitcopy of the buffer, use compactMemcpy()
-	 * instead; if you neeed a elementwise operator=-copy, use
+	 * instead; if you need a elementwise operator=-copy, use
 	 * compactCopy() instead.
 	 */
 	void compactCpycon(Array<E,INDEX>& A2) const {
@@ -192,7 +226,7 @@ public:
 	 * elements in the buffer.
 	 *
 	 * This method uses memcpy. If you need a traditional
-	 * arraycopy using a copy constructur, use compactCopy()
+	 * arraycopy using a copy constructur, use compactCoycon()
 	 * instead; if you neeed a elementwise operator=-copy, use
 	 * compactCopy() instead.
 	 */
@@ -232,9 +266,118 @@ public:
 		return i;
 	}
 
+	//! Sorts buffer using Quicksort.
+	inline void quicksort() {
+		Array<E,INDEX>::quicksort(0,num-1,StdComparer<E>());
+	}
+
+	//! Sorts buffer using Quicksort and a user-defined comparer \a comp.
+	/**
+	 * @param comp is a user-defined comparer; \a C must be a class providing a \a less(x,y) method.
+	 */
+	template<class COMPARER>
+	inline void quicksort(const COMPARER &comp) {
+		Array<E,INDEX>::quicksort(0,num-1,comp);
+	}
+
+	//! Performs a binary search for element \a x.
+	/**
+	 * \pre The buffer must be sorted!
+	 * \return the index of the found element, and low()-1 if not found.
+	 */
+	inline INDEX binarySearch (const E& e) const {
+		return Array<E,INDEX>::binarySearch(0, num-1, e, StdComparer<E>());
+	}
+
+	//! Performs a binary search for element \a x with comparer \a comp.
+	/**
+	 * \pre The buffer must be sorted according to \a comp!
+	 * \return the index of the found element, and low()-1 if not found.
+	 */
+	template<class COMPARER>
+	inline INDEX binarySearch(const E& e, const COMPARER &comp) const {
+		return Array<E,INDEX>::binarySearch(0, num-1, e, comp);
+	}
+
+	//! Randomly permutes the array.
+	void permute() {
+		Array<E,INDEX>::permute(0, num-1);
+	}
+
+	//! Removes the components listed in the buffer \a ind by shifting the remaining components to the left.
+	/**
+	 * The values stored in \a ind have to be upward sorted.
+	 * Memory management of the removed components must be
+	 * carefully implemented by the user of this function to avoid
+	 * memory leaks.
+	 *
+	 * If this function is compiled with <tt>OGDF_DEBUG</tt>
+	 * then it is checked if each value of \a ind is in the
+	 * range 0,..., \a number()-1.
+	 *
+	 * \param ind The numbers of the components being removed.
+	 */
+	void leftShift(ArrayBuffer<INDEX, INDEX> &ind) {
+		const INDEX nInd = ind.size();
+		if (nInd == 0) return;
+
+		//! shift all items up to the last element of \a ind to the left
+	#ifdef OGDF_DEBUG
+		if(ind[0] < 0 || ind[0] >= num)
+			OGDF_THROW_PARAM(AlgorithmFailureException, afcIndexOutOfBounds);
+	#endif
+
+		INDEX j, current = ind[0];
+		for (INDEX i = 0; i < nInd - 1; i++) {
+	#ifdef OGDF_DEBUG
+			if(ind[i+1] < 0 || ind[i+1] >= num)
+				OGDF_THROW_PARAM(AlgorithmFailureException, afcIndexOutOfBounds);
+	#endif
+
+			const INDEX last = ind[i+1];
+			for(j = ind[i]+1; j < last; j++)
+				operator[](current++) = operator[](j);
+		}
+
+		//! copy the rest of the buffer
+		for (j = ind[nInd - 1]+1; j < size(); j++)
+			operator[](current++) = operator[](j);
+
+		num -= nInd;
+	}
+
+	//! Changes the capacity of the buffer (independent whether the buffer is growable of not).
+	/**
+	 * If the new capacity if smaller that the currently stored elements, only the first elements (as many as fit) are
+	 * retained in the buffer. The user is responsible that no memory leaks occur.
+	 */
+	void setCapacity(INDEX newCapacity) {
+		Array<E, INDEX>::resize(newCapacity);
+	}
+
 	OGDF_NEW_DELETE
 };
 
-} //namespace
 
-#endif // OGDF_ARRAY_BUFFER_H
+// prints array a to output stream os using delimiter delim
+template<class E, class INDEX>
+void print(ostream &os, const ArrayBuffer<E,INDEX> &a, char delim = ' ')
+{
+	for (int i = 0; i < a.size(); i++) {
+		if (i > 0) os << delim;
+		os << a[i];
+	}
+}
+
+
+// output operator
+template<class E, class INDEX>
+ostream &operator<<(ostream &os, const ogdf::ArrayBuffer<E,INDEX> &a)
+{
+	print(os,a);
+	return os;
+}
+
+} // end namespace ogdf
+
+#endif

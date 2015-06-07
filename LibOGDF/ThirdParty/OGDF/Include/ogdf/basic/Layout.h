@@ -1,9 +1,9 @@
 /*
- * $Revision: 2523 $
+ * $Revision: 3188 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-02 20:59:27 +0200 (Mon, 02 Jul 2012) $
+ *   $Date: 2013-01-10 09:53:32 +0100 (Thu, 10 Jan 2013) $
  ***************************************************************/
 
 /** \file
@@ -159,6 +159,14 @@ public:
 	 * @param dpl is assigned the poyline of \a eOrig.
 	 */
 	void computePolylineClear(PlanRep &PG, edge eOrig, DPolyline &dpl);
+
+	//! Computes the bounding box of the layout, which is a drawing of \a PG.
+	/**
+	 * @param PG must be the planarized representation associated with this layout.
+	 * @return a point representing the with and height of this layout, respecting the sizes
+	 *         of nodes as stored in \a PG.
+	 */
+	DPoint computeBoundingBox(PlanRep &PG) const;
 
 	/** @} */
 

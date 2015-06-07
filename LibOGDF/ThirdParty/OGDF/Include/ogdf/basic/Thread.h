@@ -1,13 +1,13 @@
 /*
- * $Revision: 2617 $
+ * $Revision: 3504 $
  *
  * last checkin:
- *   $Author: gutwenger $
- *   $Date: 2012-07-16 15:46:07 +0200 (Mo, 16. Jul 2012) $
+ *   $Author: beyer $
+ *   $Date: 2013-05-16 14:49:39 +0200 (Thu, 16 May 2013) $
  ***************************************************************/
 
 /** \file
- * \brief Implementation of mutexes.
+ * \brief Declaration of Thread class representing threads.
  *
  * \author Carsten Gutwenger
  *
@@ -51,184 +51,111 @@
 
 #include <ogdf/basic/basic.h>
 
+
 #ifdef OGDF_SYSTEM_WINDOWS
 #include <process.h>
+
+#if _WIN32_WINNT >= 0x0600
+#define OGDF_USE_THREAD_POOL
+#endif
+
 #else
 #include <pthread.h>
 #endif
 
+
 namespace ogdf {
 
-#ifdef OGDF_SYSTEM_WINDOWS
 
+//! Base class for threads.
 class Thread
 {
+	friend class Initialization;
+
+#ifdef OGDF_USE_THREAD_POOL
+	static void initPool();
+	static void cleanupPool();
+#endif
+
 public:
-	enum State { tsRunning, tsSuspended };
-	enum Priority {
-		tpIdle     = -15,
-		tpLowest   = -2,
-		tpLow      = -1,
-		tpNormal   = 0,
-		tpHigh     = 1,
-		tpHighest  = 2,
-		tpCritical = 15
-	};
 
-	Thread() : m_handle(0), m_id(0) { }
-	virtual ~Thread() { CloseHandle(m_handle); }
+	//! Initializes a thread, but does not create a system thread yet.
+	Thread();
 
-	bool started() const { return m_id != 0; }
+	//! Destructor. Frees resources.
+	virtual ~Thread();
 
-	void priority(Priority p) { SetThreadPriority(m_handle,p); }
+	//! Returns the ID of the system thread associated with the thread object.
+	long threadID() const;
 
-	Priority priority() const { return (Priority)GetThreadPriority(m_handle); }
+	//! Returns whether the thread has been started (i.e. a system thread is currently associated with the thread object).
+	bool started() const;
 
-	__uint64 cpuAffinity(__uint64 mask) {
-		return SetThreadAffinityMask(m_handle, (DWORD_PTR)mask);
-	}
+	//! Sets the CPU affinity mask of the thread to \a mask.
+	__uint64 cpuAffinity(__uint64 mask);
 
-	void start(State state = tsRunning) {
-		if(m_handle)
-			CloseHandle(m_handle);
+	//! Starts execution of the thread.
+	void start();
 
-		m_handle = (HANDLE) _beginthreadex(0, 0, threadProc, this,
-			(state == tsSuspended) ? CREATE_SUSPENDED : 0, &m_id);
-	}
+	//! Waits until the thread has finished.
+	void join();
 
-	long threadID() const { return (long)m_id; }
-
-	void start(Priority p, State state = tsRunning) {
-		OGDF_ASSERT(m_handle == 0);
-		m_handle = (HANDLE) _beginthreadex(0, 0, threadProc, this, CREATE_SUSPENDED, &m_id);
-		SetThreadPriority(m_handle,p);
-		if(state == tsRunning)
-			ResumeThread(m_handle);
-	}
-
-	int suspend() {
-		return SuspendThread(m_handle);
-	}
-
-	int resume() {
-		return ResumeThread(m_handle);
-	}
-
-	void join() {
-		WaitForSingleObject(m_handle,INFINITE);
-	}
-
-	bool join(unsigned long milliseconds) {
-		return (WaitForSingleObject(m_handle,milliseconds) == WAIT_OBJECT_0);
-	}
+	//! Waits until the thread has finished or the time-out interval of \a milliseconds elapses.
+	/**
+	 * @param milliseconds is the time-out interval in milliseconds.
+	 * @return true if the thread has finished or false if the time-out interval has elapsed.
+	 */
+	bool join(unsigned long milliseconds);
 
 protected:
+	//! The actual work perfomed by the thread. Must be defined by derived classes.
 	virtual void doWork() = 0;
 
 private:
-	static unsigned int __stdcall threadProc(void *pParam) {
-		Thread *pThread = static_cast<Thread*>(pParam);
-		OGDF_ALLOCATOR::initThread();
-		pThread->doWork();
-		OGDF_ALLOCATOR::flushPool();
-		pThread->m_id = 0;
-		_endthreadex(0);
-		return 0;
-	}
 
-	HANDLE m_handle;
-	unsigned int m_id;
-};
+#ifdef OGDF_SYSTEM_WINDOWS
+
+#ifdef OGDF_USE_THREAD_POOL
+	struct PoolThreadData;
+
+	static SRWLOCK s_poolLock;
+	static int s_numPoolThreads;
+	static int s_numSleepingThreads;
+	static int s_maxNumPoolThreads;
+
+	static PoolThreadData **s_poolThreads;
+	static PoolThreadData **s_sleepingThreads;
+
+	PoolThreadData *m_poolThread;	//!< associated pool thread (0 if no pool thread is used)
+#endif
+
+	HANDLE          m_handle;		//!< thread handle (0 if pool thread)
+	unsigned int    m_id;			//!< thread id (0 if pool thread)
+	HANDLE          m_evFinished;	//!< event which is signaled by thread when work is finished
+
+	HANDLE getThreadHandle();
+
+	//! Thread procedure for normal threads; \a pParam points to the Thread object.
+	static unsigned int __stdcall threadProc(void *pParam);
+
+#ifdef OGDF_USE_THREAD_POOL
+	//! Thread procedure for pool threads; \a pParam points to the PoolThreadData object.
+	static unsigned int __stdcall poolThreadProc(void *pParam);
+#endif
 
 
 #else
 
-class Thread
-{
-public:
-	enum State { tsRunning, tsSuspended };
-	enum Priority {
-		tpIdle     = -15,
-		tpLowest   = -2,
-		tpLow      = -1,
-		tpNormal   = 0,
-		tpHigh     = 1,
-		tpHighest  = 2,
-		tpCritical = 15
-	};
-
-	Thread() : m_pt(0) { }
-
-	virtual ~Thread() { }
-
-	bool started() const { return m_pt != 0; }
-
-	//void priority(Priority p) { SetThreadPriority(m_handle,p); }
-
-	//Priority priority() const { return (Priority)GetThreadPriority(m_handle); }
-
-	//__uint64 cpuAffinity(__uint64 mask) {
-	//	return SetThreadAffinityMask(m_handle, (DWORD_PTR)mask);
-	//}
-
-	void start(State state = tsRunning) {
-		OGDF_ASSERT(m_pt == 0);
-		pthread_create(&m_pt, NULL, threadProc, this);
-	}
-
-//#ifdef OGDF_SYSTEM_OSX
-	long threadID() const {
-		return (long)m_pt;
-	}
-//#else
-//	int threadID() const {
-//		return (int)m_pt;
-//	}
-//#endif
-
-	//void start(Priority p, State state = tsRunning) {
-	//	OGDF_ASSERT(m_handle == 0);
-	//	m_handle = (HANDLE) _beginthreadex(0, 0, threadProc, this, CREATE_SUSPENDED, 0);
-	//	SetThreadPriority(m_handle,p);
-	//	if(state == tsRunning)
-	//		ResumeThread(m_handle);
-	//}
-
-	//int suspend() {
-	//	return SuspendThread(m_handle);
-	//}
-
-	//int resume() {
-	//	return ResumeThread(m_handle);
-	//}
-
-	void join() {
-		if(m_pt != 0)
-			pthread_join(m_pt,NULL);
-	}
-
-	//bool join(unsigned long milliseconds) {
-	//	return (WaitForSingleObject(m_handle,milliseconds) == WAIT_OBJECT_0);
-	//}
-
-protected:
-	virtual void doWork() = 0;
-
-private:
-	static void *threadProc(void *pParam) {
-		Thread *pThread = static_cast<Thread*>(pParam);
-		OGDF_ALLOCATOR::initThread();
-		pThread->doWork();
-		pthread_exit(NULL);
-		OGDF_ALLOCATOR::flushPool();
-		pThread->m_pt = 0;
-		return 0;
-	}
+	static void *threadProc(void *pParam);
 
 	pthread_t m_pt;
-};
 
 #endif
+
+	OGDF_NEW_DELETE
+
+};
+
 
 } // end namespace ogdf
 

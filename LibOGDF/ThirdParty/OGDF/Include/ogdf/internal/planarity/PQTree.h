@@ -1,9 +1,9 @@
 /*
- * $Revision: 2583 $
+ * $Revision: 3388 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-12 01:02:21 +0200 (Do, 12. Jul 2012) $
+ *   $Date: 2013-04-10 14:56:08 +0200 (Wed, 10 Apr 2013) $
  ***************************************************************/
 
 /** \file
@@ -93,7 +93,7 @@ public:
 
 	virtual void front(
 		PQNode<T,X,Y>* nodePtr,
-	 	SListPure<PQLeafKey<T,X,Y>*> &leafKeys);
+		SListPure<PQLeafKey<T,X,Y>*> &leafKeys);
 
 	virtual void CleanNode(PQNode<T,X,Y>* /* nodePtr */) { }
 
@@ -508,7 +508,7 @@ bool PQTree<T,X,Y>::addNodeToNewParent(
 				The parent is a $Q$-node with children.
 				The [[leftBrother]] is a [[0]]-pointer while the
 				[[rightBrother]] denotes an existing child of [[parent]].
-				The node [[rightBrother]] {\bf must be} one of the two endmost
+				The node [[rightBrother]] <b>must be</b> one of the two endmost
 				children of [[parent]]. If this is not the case, the chunk
 				detects this, halts the procedure [[addNewLeavesToTree]]
 				printing an error message and returning [[0]].
@@ -539,7 +539,7 @@ bool PQTree<T,X,Y>::addNodeToNewParent(
 				The parent is a $Q$-node with children.
 				The [[rightBrother]] is a [[0]]-pointer while the
 				[[leftBrother]] denotes an existing child of [[parent]]. The
-				node [[leftBrother]] {\bf must be} one of the two endmost
+				node [[leftBrother]] <b>must be</b> one of the two endmost
 				children of [[parent]]. If this is not the case, the chunk
 				detects this, halts the procedure [[addNodeToNewParent]]
 				printing an error message and returning [[0]].
@@ -1810,7 +1810,7 @@ void PQTree<T,X,Y>::front(
 				OGDF_ASSERT(checkNode->m_referenceChild)
 				firstSon = checkNode->m_referenceChild;
 			}
- 			else if (checkNode->type() == PQNodeRoot::QNode)
+			else if (checkNode->type() == PQNodeRoot::QNode)
 			{
 				OGDF_ASSERT(checkNode->m_leftEndmost)
 				firstSon = checkNode->m_leftEndmost;
@@ -2213,7 +2213,7 @@ bool PQTree<T,X,Y>::Reduce(SListPure<PQLeafKey<T,X,Y>*> &leafKeys)
 		{
 			/*
 			Application of the template matchings to a pointer [[checkNode]]
-			storing the adress of a node that is {\bf not the root} of the
+			storing the adress of a node that is <b>not the root</b> of the
 			pertinent subtree. Before applying the template matchings to
 			[[checkNode]], some values of the parent of [[checkNode]] are
 			updated. The number of the parents pertinent children stored in
@@ -2242,7 +2242,7 @@ bool PQTree<T,X,Y>::Reduce(SListPure<PQLeafKey<T,X,Y>*> &leafKeys)
 		{
 			/*
 			application of the template matchings to a pointer [[checkNode]]
-			that stores the adress of a node that {\bf is the root} of the
+			that stores the adress of a node that <b>is the root</b> of the
 			pertinent subtree. In a case that a template matching was
 			successfully applied, the pointer [[checkNode]] stores after the
 			application the adress of the root of pertinent subtree. This
@@ -2354,14 +2354,14 @@ void PQTree<T,X,Y>::removeBlock(PQNode<T,X,Y> *nodePtr,bool isRoot)
 	PQNode<T,X,Y> *endempty_1 = 0;
 
 	/*
-	Pointer to the first {\it non ignored} node
+	Pointer to the first <i>non ignored</i> node
 	with full status. [[realfull_1]] is identical to [[endfull_1]] if no
 	ignored nodes appear at the full end of the first partial child.
 	*/
 	PQNode<T,X,Y> *realfull_1 = 0;
 
 	/*
-	Pointer to the first {\it non ignored} node
+	Pointer to the first <i>non ignored</i> node
 	with empty status. [[realempty_1]] is identical to [[endempty_1]] if no
 	ignored nodes appear at the empty end of the first partial child.
 	*/
@@ -2387,7 +2387,7 @@ void PQTree<T,X,Y>::removeBlock(PQNode<T,X,Y> *nodePtr,bool isRoot)
 	PQNode<T,X,Y> *endempty_2 = 0;
 
 	/*
-	Pointer to the first {\it non ignored} node
+	Pointer to the first <i>non ignored</i> node
 	with empty status. [[realempty_2]] is identical to [[endempty_2]] if no
 	ignored nodes appear at the empty end of the first partial child.
 	*/
@@ -2428,7 +2428,7 @@ void PQTree<T,X,Y>::removeBlock(PQNode<T,X,Y> *nodePtr,bool isRoot)
 	[[nonstatussib_1]] then stores the adress of the endmost ignored child.
 	Observe that it is not valid for a $Q$-node to have only one
 	non-ignored child and several ignored children. Hence this situation
-	is only allowed to appear {\bf once} on one side of [[partial_1]].
+	is only allowed to appear <b>once</b> on one side of [[partial_1]].
 	Every other situation results in an error message.
 	*/
 	PQNode<T,X,Y> *nonstatussib_1 = 0;
@@ -2468,7 +2468,7 @@ void PQTree<T,X,Y>::removeBlock(PQNode<T,X,Y> *nodePtr,bool isRoot)
 	[[nonstatussib_2]] then stores the adress of the endmost ignored child.
 	Observe that it is not valid for a $Q$-node to have only one
 	non-ignored child and several ignored children. Hence this situation
-	is only allowed to appear {\bf once} on one side of [[partial_2]].
+	is only allowed to appear <b>once</b> on one side of [[partial_2]].
 	Every other situation results in an error message.
 	*/
 	PQNode<T,X,Y> *nonstatussib_2 = 0;
@@ -2491,7 +2491,7 @@ void PQTree<T,X,Y>::removeBlock(PQNode<T,X,Y> *nodePtr,bool isRoot)
 		nodePtr->m_parent->partialChildren->pushFront(nodePtr);
 
 	if (!nodePtr->partialChildren->empty())
- 												// Get a partial child.
+												// Get a partial child.
 	{
 		partial_1 = nodePtr->partialChildren->popFrontRet();
 
@@ -3804,7 +3804,7 @@ bool PQTree<T,X,Y>::templateQ2(PQNode<T,X,Y> *nodePtr,bool isRoot)
 			partial child this chunk checks, if the partial child is
 			endmost child of the [[nodePtr]]. If this is not the case,
 			[[nodePtr]] cannot be reduced by the template matching
-			{\bf Q2}.
+			<b>Q2</b>.
 			*/
 			//nodePtr->partialChildren->startAtBottom();
 			//partialChild = nodePtr->partialChildren->readNext();

@@ -1,9 +1,9 @@
 /*
- * $Revision: 2523 $
+ * $Revision: 3091 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-02 20:59:27 +0200 (Mon, 02 Jul 2012) $
+ *   $Date: 2012-11-30 11:07:34 +0100 (Fri, 30 Nov 2012) $
  ***************************************************************/
 
 /** \file
@@ -132,7 +132,7 @@ public:
 	static OGDF_EXPORT void deallocateList(size_t nBytes, void *pHead, void *pTail);
 
 	static OGDF_EXPORT void flushPool();
-	static OGDF_EXPORT void flushPool(__uint16 nBytes);
+	//static OGDF_EXPORT void flushPool(__uint16 nBytes);
 
 	//! Returns the total amount of memory (in bytes) allocated from the system.
 	static OGDF_EXPORT size_t memoryAllocatedInBlocks();
@@ -143,32 +143,34 @@ public:
 	//! Returns the total amount of memory (in bytes) available in the thread's free lists.
 	static OGDF_EXPORT size_t memoryInThreadFreeList();
 
+	//! Defragments the global free lists.
+	/**
+	 * This methods sorts the global free lists, so that successive elements come after each
+	 * other. This can improve perfomance for data structure that allocate many elements from
+	 * the pool like lists and graphs.
+	 */
+	static OGDF_EXPORT void defrag();
+
 private:
+	static inline void enterCS();
+	static inline void leaveCS();
+
 	static int slicesPerBlock(__uint16 nBytes) {
 		int nWords;
 		return slicesPerBlock(nBytes,nWords);
 	}
 
 	static int slicesPerBlock(__uint16 nBytes, int &nWords) {
-		nWords = (nBytes+sizeof(MemElemPtr)-1)/sizeof(MemElemPtr);
-		return (eBlockSize-sizeof(MemElemPtr))/(nWords*sizeof(MemElemPtr));
+		nWords = (nBytes + __SIZEOF_POINTER__ - 1) / __SIZEOF_POINTER__;
+		return (eBlockSize - __SIZEOF_POINTER__) / (nWords * __SIZEOF_POINTER__);
 	}
-
-	static void incVectorSlot(PoolElement &pe);
-
-	static void flushPoolSmall(__uint16 nBytes);
-	static MemElemExPtr collectGroups(
-		__uint16 nBytes,
-		MemElemPtr &pRestHead,
-		MemElemPtr &pRestTail,
-		int &nRest);
 
 	static void *fillPool(MemElemPtr &pFreeBytes, __uint16 nBytes);
 
-	static MemElemPtr allocateBlock(__uint16 nBytes);
+	static MemElemPtr allocateBlock();
+	static void makeSlices(MemElemPtr p, int nWords, int nSlices);
 
 	static PoolElement s_pool[eTableSize];
-	static MemElemPtr s_freeVectors;
 	static BlockChainPtr s_blocks;
 
 #ifdef OGDF_MEMORY_POOL_NTS

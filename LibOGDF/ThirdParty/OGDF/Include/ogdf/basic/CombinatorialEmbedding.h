@@ -1,9 +1,9 @@
 /*
- * $Revision: 2523 $
+ * $Revision: 3307 $
  *
  * last checkin:
- *   $Author: gutwenger $
- *   $Date: 2012-07-02 20:59:27 +0200 (Mon, 02 Jul 2012) $
+ *   $Author: chimani $
+ *   $Date: 2013-02-06 16:49:37 +0100 (Wed, 06 Feb 2013) $
  ***************************************************************/
 
 /** \file
@@ -55,7 +55,9 @@
 
 namespace ogdf {
 
-class OGDF_EXPORT ConstCombinatorialEmbedding;
+class ConstCombinatorialEmbedding;
+class GraphCopy;
+
 
 typedef FaceElement *face;
 
@@ -114,6 +116,10 @@ public:
 	const ConstCombinatorialEmbedding *embeddingOf() const { return m_pEmbedding; }
 #endif
 
+	//! Standard Comparer
+	static int compare(const FaceElement& x,const FaceElement& y) { return x.m_id-y.m_id; }
+	OGDF_AUGMENT_COMPARER(FaceElement)
+
 	OGDF_NEW_DELETE
 }; // class FaceElement
 
@@ -134,6 +140,10 @@ template<class T>class FaceArray;
  * in clockwise order for internal faces, and in counter-clockwise order for the
  * external face.
  *
+ * <H3>Thread Safety</H3>
+ * The class Graph allows shared access of threads to const methods only.
+ * If one thread executes a non-const method, shared access is no longer thread-safe.
+ *
  * \see CombinatorialEmbedding provides additional functionality for modifying
  *      the embedding.
  */
@@ -151,6 +161,10 @@ protected:
 	face m_externalFace; //! The external face.
 
 	mutable ListPure<FaceArrayBase*> m_regFaceArrays; //!< The registered face arrays.
+
+#ifndef OGDF_MEMORY_POOL_NTS
+	mutable CriticalSection m_csRegArrays; //!< The critical section for protecting shared acces to register/unregister methods.
+#endif
 
 public:
 	/** @{
@@ -283,6 +297,20 @@ protected:
 	//! Reinitialize associated face arrays.
 	void reinitArrays();
 
+	//! Enter critical section for (un-)registering arrays.
+	void enterCSRegArrays() const {
+#ifndef OGDF_MEMORY_POOL_NTS
+		m_csRegArrays.enter();
+#endif
+	}
+
+	//! Leave critical section for (un-)registering arrays.
+	void leaveCSRegArrays() const {
+#ifndef OGDF_MEMORY_POOL_NTS
+		m_csRegArrays.leave();
+#endif
+	}
+
 }; // class ConstCombinatorialEmbedding
 
 
@@ -292,9 +320,15 @@ protected:
  *
  * Maintains a combinatorial embedding of an embedded graph, i.e., the set of
  * faces, and provides method for modifying the embedding, e.g., by inserting edges.
+ *
+ * <H3>Thread Safety</H3>
+ * The class Graph allows shared access of threads to const methods only.
+ * If one thread executes a non-const method, shared access is no longer thread-safe.
  */
 class OGDF_EXPORT CombinatorialEmbedding : public ConstCombinatorialEmbedding
 {
+	friend class GraphCopy;
+
 	Graph *m_pGraph; //!< The associated graph.
 
 	// the following methods are private in order to make them unusable
@@ -423,10 +457,22 @@ public:
 
 	// incremental stuff
 
-	//special version of the above function doing a pushback of the new edge
-	//on the adjacency list of v making it possible to insert new degree 0
-	//nodes into a face
+	/**
+	 * \brief Splits a face by inserting a new edge.
+	 *
+	 * Special version of splitFace doing a pushback of the new edge
+	 * on the adjacency list of \a v making it possible to insert new degree 0
+	 * nodes into a face.
+	 */
 	edge splitFace(node v, adjEntry adjTgt);
+
+	/**
+	 * \brief Splits a face by inserting a new edge.
+	 *
+	 * Special version of splitFace doing a pushback of the new edge
+	 * on the adjacency list of \a v making it possible to insert new degree 0
+	 * nodes into a face.
+	 */
 	edge splitFace(adjEntry adjSrc, node v);
 
 	/**
@@ -439,8 +485,10 @@ public:
 	//! Reverses edges \a e and updates embedding.
 	void reverseEdge(edge e);
 
+	//! Moves a bridge in the graph.
 	void moveBridge(adjEntry adjBridge, adjEntry adjBefore);
 
+	//! Removes degree-1 node \a v.
 	void removeDeg1(node v);
 
 	//! Update face information after inserting a merger in a copy graph.
@@ -448,6 +496,14 @@ public:
 
 
 	/** @} */
+
+protected:
+	/**
+	 * \brief Joins the two faces adjacent to \a e but does not remove edge \e e.
+	 * @param e is an edge in the associated graph.
+	 * \return the resulting (joined) face.
+	 */
+	face joinFacesPure(edge e);
 
 }; // class CombinatorialEmbedding
 

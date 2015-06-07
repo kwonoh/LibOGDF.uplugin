@@ -1,9 +1,9 @@
 /*
- * $Revision: 2566 $
+ * $Revision: 3188 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-07 23:10:08 +0200 (Sa, 07. Jul 2012) $
+ *   $Date: 2013-01-10 09:53:32 +0100 (Thu, 10 Jan 2013) $
  ***************************************************************/
 
 /** \file
@@ -57,7 +57,7 @@
 
 
 #include <ogdf/planarity/PlanRepInc.h>
-#include <ogdf/basic/UMLGraph.h>
+#include <ogdf/uml/UMLGraph.h>
 #include <ogdf/basic/GraphAttributes.h>
 #include <ogdf/basic/GraphObserver.h>
 #include <ogdf/basic/IncNodeInserter.h>

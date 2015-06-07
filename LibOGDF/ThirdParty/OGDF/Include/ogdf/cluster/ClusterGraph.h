@@ -1,9 +1,9 @@
 /*
- * $Revision: 2564 $
+ * $Revision: 3307 $
  *
  * last checkin:
- *   $Author: gutwenger $
- *   $Date: 2012-07-07 00:03:48 +0200 (Sa, 07. Jul 2012) $
+ *   $Author: chimani $
+ *   $Date: 2013-02-06 16:49:37 +0100 (Wed, 06 Feb 2013) $
  ***************************************************************/
 
 /** \file
@@ -183,8 +183,11 @@ public:
 	//! the ClusterElement belongs to.
 	int getClusterNodes(NodeArray<bool> &clusterNode);
 
-	OGDF_NEW_DELETE
+	//! Standard Comparer
+	static int compare(const ClusterElement& x,const ClusterElement& y) { return x.m_id-y.m_id; }
+	OGDF_AUGMENT_COMPARER(ClusterElement)
 
+	OGDF_NEW_DELETE
 };// class ClusterElement
 
 
@@ -343,8 +346,7 @@ public:
 	void clearClusterTree(cluster C);
 
 	//! Returns a reference to the underlying graph.
-	//TODO should be named getConstGraph
-	const Graph & getGraph() const {return *m_pGraph;}
+	const Graph &constGraph() const { return *m_pGraph; }
 
 	//! Inserts a new cluster; makes it a child of the cluster \a parent.
 	cluster newCluster(cluster parent, int id = -1);
@@ -609,26 +611,6 @@ public:
 		}
 	}
 
-	//**************************
-	//file output
-
-	//! Writes the cluster graph in GML format to file \a fileName.
-	void writeGML(const char *fileName);
-
-	//! Writes the cluster graph in GML format to output stream \a os.
-	void writeGML(ostream &os);
-
-
-	//**************************
-	//file input
-	//! reading graph, attributes, cluster structure from file
-	bool readClusterGML(const char* fileName, Graph& G);
-	//! reading graph, attributes, cluster structure from stream
-	bool readClusterGML(istream& is, Graph& G);
-
-	// read Cluster Graph from OGML file
-	//bool readClusterGraphOGML(const char* fileName, ClusterGraph& CG, Graph& G);
-
 	//! Checks the consistency of the data structure.
 	// (for debugging purposes only)
 	bool consistencyCheck();
@@ -786,30 +768,7 @@ private:
 	void postOrder(cluster c,SListPure<cluster> &S) const;
 
 	void reinitArrays();
-
-
-	//! Recursively write the cluster structure in GML.
-	void writeCluster(
-		ostream &os,
-		NodeArray<int> &nId,
-		ClusterArray<int> & cId,
-		int &nextId,
-		cluster c,
-		String ttt);
-
-	//! Recursively write the cluster structure in GraphWin GML.
-	void writeGraphWinCluster(
-		ostream &os,
-		NodeArray<int> &nId,
-		NodeArray<String> &nStr,
-		ClusterArray<int> &cId,
-		ClusterArray<String> &cStr,
-		int &nextId,
-		cluster c,
-		String ttt);
-
 };
-
 
 
 

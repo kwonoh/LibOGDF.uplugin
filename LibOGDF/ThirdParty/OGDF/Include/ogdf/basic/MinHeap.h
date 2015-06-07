@@ -1,9 +1,9 @@
 /*
- * $Revision: 2583 $
+ * $Revision: 3516 $
  *
  * last checkin:
- *   $Author: gutwenger $
- *   $Date: 2012-07-12 01:02:21 +0200 (Do, 12. Jul 2012) $
+ *   $Author: klein $
+ *   $Date: 2013-05-30 09:21:59 +0200 (Thu, 30 May 2013) $
  ***************************************************************/
 
 /** \file
@@ -48,9 +48,12 @@
 #define OGDF_MIN_HEAP_H
 
 #include<ogdf/basic/Array.h>
+#include<ogdf/basic/comparer.h>
+
 
 namespace ogdf {
 
+#if 0
 //! Augments any data elements of type \a X with keys of type \a Score.
 /**
  * Also defines comparator function using the keys.
@@ -70,19 +73,20 @@ public:
 	Priority priority() const { return p; }
 	//! Returns the data of the element
 	X item() const { return x;}
-	//! Comparison oprator based on the compare-operator for the key type (\a Priority)
+	//! Comparison operator based on the compare-operator for the key type (\a Priority)
 	bool operator<(const Prioritized<X,Priority>& P) const { return p<P.p; }
-	//! Comparison oprator based on the compare-operator for the key type (\a Priority)
+	//! Comparison operator based on the compare-operator for the key type (\a Priority)
 	bool operator<=(const Prioritized<X,Priority>& P) const { return p<=P.p; }
-	//! Comparison oprator based on the compare-operator for the key type (\a Priority)
+	//! Comparison operator based on the compare-operator for the key type (\a Priority)
 	bool operator>(const Prioritized<X,Priority>& P) const { return p>P.p; }
-	//! Comparison oprator based on the compare-operator for the key type (\a Priority)
+	//! Comparison operator based on the compare-operator for the key type (\a Priority)
 	bool operator>=(const Prioritized<X,Priority>& P) const { return p>=P.p; }
-	//! Comparison oprator based on the compare-operator for the key type (\a Priority)
+	//! Comparison operator based on the compare-operator for the key type (\a Priority)
 	bool operator==(const Prioritized<X,Priority>& P) const { return p==P.p; }
-	//! Comparison oprator based on the compare-operator for the key type (\a Priority)
+	//! Comparison operator based on the compare-operator for the key type (\a Priority)
 	bool operator!=(const Prioritized<X,Priority>& P) const { return p!=P.p; }
 };
+#endif //moved class
 
 
 //! Dynamically growing binary heap tuned for efficiency on a small interface (compared to BinaryHeap).
@@ -188,7 +192,7 @@ protected:
  * It assumes that the data-elements are themselves comparable, i.e., the compare-function
  * of the items implicitly defines the keys.
  *
- * If your intended datastructure do not dorectly offer a compare function, but you have
+ * If your intended datastructure do not directly offer a compare function, but you have
  * certain key-values (scores, etc.), you may want to use the convenience-class
  * Prioritized < Priority,X > to bind both together and use within BinaryHeapSimple.
  */
@@ -268,8 +272,8 @@ public:
 		BinaryHeapSimple<X,INDEX>::push(x);
 	}
 	//! Alternative name for pushBlind().
-	inline void insertBlind(X& x, X& out) {
-		return pushBlind(x, out);
+	inline void insertBlind(X& x) {
+		pushBlind(x);
 	}
 
 	//! obtain const references to the element at index \a idx
@@ -305,7 +309,7 @@ public:
 	void pushAndDelete(X* x, Priority p) {
 		Prioritized<X*, Priority> vo;
 		Prioritized<X*, Priority> nv(x, p);
-		if(returnedSomething( Top10Heap<Prioritized<X*, Priority>,INDEX >::push(nv, vo) ))
+		if(this->returnedSomething( Top10Heap<Prioritized<X*, Priority>,INDEX >::push(nv, vo) ))
 			delete vo.item();
 	}
 	//! Alternative name for pushAndDelete().

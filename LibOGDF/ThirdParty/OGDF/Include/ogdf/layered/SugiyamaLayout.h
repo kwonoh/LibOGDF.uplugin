@@ -1,9 +1,9 @@
 /*
- * $Revision: 2564 $
+ * $Revision: 3833 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-07 00:03:48 +0200 (Sa, 07. Jul 2012) $
+ *   $Date: 2013-11-13 11:23:15 +0100 (Wed, 13 Nov 2013) $
  ***************************************************************/
 
 /** \file
@@ -155,7 +155,7 @@ namespace ogdf {
  *     <td><i>ranking</i><td>RankingModule<td>LongestPathRanking
  *     <td>The ranking module determines the layering of the graph.
  *   </tr><tr>
- *     <td><i>crossMin</i><td>TwoLayerCrossMin<td>BarycenterHeuristic
+ *     <td><i>crossMin</i><td>LayerByLayerSweep<td>BarycenterHeuristic
  *     <td>The crossMin module performs two-layer crossing
  *     minimization and is applied during the top-down bottom-up traversals.
  *   </tr><tr>
@@ -177,13 +177,16 @@ namespace ogdf {
  */
 class OGDF_EXPORT SugiyamaLayout : public LayoutModule {
 
+	//class CrossMinMaster;
+	//class CrossMinWorker;
+
 protected:
 
 	//! the ranking module (level assignment)
 	ModuleOption<RankingModule>                m_ranking;
 
 	//! the module for two-layer crossing minimization
-	ModuleOption<TwoLayerCrossMin>             m_crossMin;
+	ModuleOption<LayeredCrossMinModule>        m_crossMin;
 
 	ModuleOption<TwoLayerCrossMinSimDraw>      m_crossMinSimDraw;
 
@@ -196,13 +199,14 @@ protected:
 	//! The module for arranging connected components.
 	ModuleOption<CCLayoutPackModule>           m_packer;
 
-	int    m_fails;      //!< Option for maximal number of fails.
-	int    m_runs;       //!< Option for number of runs.
-	bool   m_transpose;  //!< Option for switching on transposal heuristic.
-	bool   m_arrangeCCs; //!< Option for laying out components separately.
-	double m_minDistCC;  //!< Option for distance between connected components.
-	double m_pageRatio;  //!< Option for desired page ratio.
+	int    m_fails;			//!< Option for maximal number of fails.
+	int    m_runs;			//!< Option for number of runs.
+	bool   m_transpose;		//!< Option for switching on transposal heuristic.
+	bool   m_arrangeCCs;	//!< Option for laying out components separately.
+	double m_minDistCC;		//!< Option for distance between connected components.
+	double m_pageRatio;		//!< Option for desired page ratio.
 	bool   m_permuteFirst;
+	int    m_maxThreads;	//!< The maximal number of used threads.
 
 	int m_nCrossings;    //!< Number of crossings in computed layout.
 	RCCrossings m_nCrossingsCluster;
@@ -211,7 +215,7 @@ protected:
 	bool m_alignBaseClasses; //!< Option for aligning base classes.
 	bool m_alignSiblings;    //!< Option for aligning siblings in inheritance trees.
 
-	EdgeArray<unsigned int> *m_subgraphs; //!< Defines the subgraphs for simultaneous drawing.
+	EdgeArray<__uint32> *m_subgraphs; //!< Defines the subgraphs for simultaneous drawing.
 
 public:
 
@@ -228,31 +232,33 @@ public:
 	 */
 
 	/**
-	 * \brief Calls the layout algorithm for graph \a AG.
+	 * \brief Calls the layout algorithm for graph \a GA.
 	 *
-	 * Returns the computed layout in \a AG.
+	 * Returns the computed layout in \a GA.
 	 */
-	void call(GraphAttributes &AG);
+	void call(GraphAttributes &GA);
+
+	void call(GraphAttributes &GA, GraphConstraints & GC) { call(GA); }
 
 	/**
-	 * \brief Calls the layout algorithm for clustered graph \a AG.
+	 * \brief Calls the layout algorithm for clustered graph \a CGA.
 	 *
-	 * Returns the computed layout in \a AG.
+	 * Returns the computed layout in \a CGA.
 	 */
-	void call(ClusterGraphAttributes &AG);
+	void call(ClusterGraphAttributes &CGA);
 
 	/**
 	 * \brief Calls the layout algorithm for graph \a AG with a given level assignment.
 	 *
 	 * Returns the computed layout in \a AG.
-	 * @param AG is the input graph (with node size information) and is assigned
+	 * @param GA is the input graph (with node size information) and is assigned
 	 *        the computed layout.
 	 * @param rank defines the level of each node.
 	 */
-	void call(GraphAttributes &AG, NodeArray<int> &rank);
+	void call(GraphAttributes &GA, NodeArray<int> &rank);
 
 	// special call for UML graphs
-	void callUML(GraphAttributes &AG);
+	void callUML(GraphAttributes &GA);
 
 
 	/** @}
@@ -354,14 +360,23 @@ public:
 	void alignSiblings(bool b) { m_alignSiblings = b; }
 
 	//! Sets the subgraphs for simultaneous drawing.
-	void setSubgraphs(EdgeArray<unsigned int> *esg) { m_subgraphs = esg; }
+	void setSubgraphs(EdgeArray<__uint32> *esg) { m_subgraphs = esg; }
 
 	//! Returns true iff subgraphs for simultaneous drawing are set.
-	bool useSubgraphs() const { return (m_subgraphs == 0) ? 0 : 1; }
-
+	bool useSubgraphs() const { return (m_subgraphs != 0); }
 
 	bool permuteFirst() const { return m_permuteFirst; }
 	void permuteFirst(bool b) { m_permuteFirst = b; }
+
+	//! Returns the maximal number of used threads.
+	int maxThreads() const { return m_maxThreads; }
+
+	//! Sets the maximal number of used threads to \a n.
+	void maxThreads(int n) {
+#ifndef OGDF_MEMORY_POOL_NTS
+		m_maxThreads = n;
+#endif
+	}
 
 
 	/** @}
@@ -389,7 +404,7 @@ public:
 	 * This module is called within the top-down and bottom-up traversal
 	 * of the Sugiyama crossing minimization procedure.
 	 */
-	void setCrossMin(TwoLayerCrossMin *pCrossMin) {
+	void setCrossMin(LayeredCrossMinModule *pCrossMin) {
 		m_crossMin.set(pCrossMin);
 	}
 
@@ -446,11 +461,17 @@ public:
 
 	double timeReduceCrossings() { return m_timeReduceCrossings; }
 
+	// needed by LayerByLayerSweep::
+	const EdgeArray<__uint32> *subgraphs() const { return m_subgraphs; };
+	int numCC() const { return m_numCC; };
+	const NodeArray<int>& compGC() const { return m_compGC; };
+
 protected:
 
-	void reduceCrossings(Hierarchy &H);
-	//void reduceCrossings2(Hierarchy &H);
+	//void reduceCrossings(HierarchyLevels &levels);
 	void reduceCrossings(ExtendedNestingGraph &H);
+
+	const HierarchyLevelsBase *reduceCrossings(Hierarchy &H);
 
 private:
 	int m_numCC;
@@ -459,14 +480,13 @@ private:
 	void doCall(GraphAttributes &AG, bool umlCall);
 	void doCall(GraphAttributes &AG, bool umlCall, NodeArray<int> &rank);
 
-	int traverseTopDown (Hierarchy &H);
-	int traverseBottomUp(Hierarchy &H);
-	//int traverseTopDown2 (Hierarchy &H);
-	//int traverseBottomUp2(Hierarchy &H);
+	//int traverseTopDown (HierarchyLevels &levels);
+	//int traverseBottomUp(HierarchyLevels &levels);
 
-	bool transposeLevel(int i, Hierarchy &H);
-	void doTranspose(Hierarchy &H);
-	void doTransposeRev(Hierarchy &H);
+	//bool transposeLevel(int i, HierarchyLevels &levels);
+	//void doTranspose(HierarchyLevels &levels);
+	//void doTransposeRev(HierarchyLevels &levels);
+
 
 	int m_numLevels;
 	int m_maxLevelSize;
@@ -474,8 +494,6 @@ private:
 
 	RCCrossings traverseTopDown (ExtendedNestingGraph &H);
 	RCCrossings traverseBottomUp(ExtendedNestingGraph &H);
-
-	//NodeArray<double> m_weight;
 };
 
 

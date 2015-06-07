@@ -1,9 +1,9 @@
 /*
- * $Revision: 2583 $
+ * $Revision: 3642 $
  *
  * last checkin:
- *   $Author: gutwenger $
- *   $Date: 2012-07-12 01:02:21 +0200 (Do, 12. Jul 2012) $
+ *   $Author: beyer $
+ *   $Date: 2013-07-06 18:17:45 +0200 (Sat, 06 Jul 2013) $
  ***************************************************************/
 
 /** \file
@@ -299,9 +299,9 @@ public:
 	 * \brief Returns the first edge in the list of edges coresponding to edge \a e.
 	 * @param e is an edge in the original graph.
 	 * \return the first edge in the corresponding list of edges in
-	 * the graph copy.
+	 * the graph copy or NULL if it does not exist.
 	 */
-	edge copy(edge e) const { return m_eCopy[e].front(); }
+	edge copy(edge e) const { return (m_eCopy[e].empty() ? NULL : m_eCopy[e].front()); }
 
 	/**
 	 * \brief Returns true iff \a v has no corresponding node in the original graph.
@@ -352,7 +352,7 @@ public:
 	 * \pre The corresponding lists oforiginal edges contain each only one edge.
 	 * \param v is a node in the graph copy.
 	 */
-	void delCopy(node v);
+	virtual void delNode(node v);
 
 	/**
 	 * \brief Removes edge e and clears the list of edges corresponding to \a e's original edge.
@@ -360,7 +360,7 @@ public:
 	 * \pre The list of edges corresponding to \a e's original edge contains only \a e.
 	 * \param e is an edge in the graph copy.
 	 */
-	void delCopy(edge e);
+	virtual void delEdge(edge e);
 
 
 	/**
@@ -421,6 +421,12 @@ public:
 	 */
 	void setEdge(edge eOrig, edge eCopy);
 
+	//! Embeds the graph copy.
+	bool embed();
+
+	//! Removes all crossing nodes which are actually only two "touching" edges.
+	void removePseudoCrossings();
+
 	//! Re-inserts edge \a eOrig by "crossing" the edges in \a crossedEdges.
 	/**
 	 * Let \a v and \a w be the copies of the source and target nodes of \a eOrig.
@@ -433,7 +439,7 @@ public:
 	 */
 	void insertEdgePath(edge eOrig, const SList<adjEntry> &crossedEdges);
 
-	//for FixedEmbeddingUpwardEdgeInserter only
+	//! Special version (for FixedEmbeddingUpwardEdgeInserter only).
 	void insertEdgePath(node srcOrig, node tgtOrig, const SList<adjEntry> &crossedEdges);
 
 
@@ -518,8 +524,8 @@ public:
 		CombinatorialEmbedding &E,
 		const SList<adjEntry> &crossedEdges);
 
+	//! Removes the complete edge path for edge \a eOrig while preserving the embedding.
 	/**
-	 * Removes the complete edge path for edge \a eOrig while preserving the embedding.
 	 * @param E is an embedding of the graph copy.
 	 * @param eOrig is an edge in the original graph.
 	 * @param newFaces is assigned the set of new faces resulting from joining faces
@@ -575,6 +581,14 @@ public:
 	 */
 	void createEmpty(const Graph &G);
 
+	//! Initializes the graph copy for the nodes in component \a cc.
+	/**
+	 * @param info  must be a connected component info structure for the original graph.
+	 * @param cc    is the number of the connected component.
+	 * @param eCopy is assigned a mapping from original to copy edges.
+	 */
+	void initByCC(const CCsInfo &info, int cc, EdgeArray<edge> &eCopy);
+
 	//! Initializes the graph copy for the nodes in a component.
 	/**
 	 * Creates copies of all nodes in \a nodes and their incident edges.
@@ -629,6 +643,13 @@ public:
 
 
 	//@}
+
+protected:
+	void removeUnnecessaryCrossing(
+		adjEntry adjA1,
+		adjEntry adjA2,
+		adjEntry adjB1,
+		adjEntry adjB2);
 
 private:
 	void initGC(const GraphCopy &GC,

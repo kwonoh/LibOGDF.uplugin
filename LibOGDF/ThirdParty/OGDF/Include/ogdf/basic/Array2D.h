@@ -1,13 +1,14 @@
 /*
- * $Revision: 2615 $
+ * $Revision: 3445 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-16 14:23:36 +0200 (Mo, 16. Jul 2012) $
+ *   $Date: 2013-04-24 11:08:43 +0200 (Wed, 24 Apr 2013) $
  ***************************************************************/
 
 /** \file
- * \brief Declaration and implementation of class Array2D which
+ * \brief Declaration and implementation of class Array2D which implements
+ * dynamic two dimensional arrays.
  *
  * \author Carsten Gutwenger
  *
@@ -257,7 +258,7 @@ void Array2D<E>::copy(const Array2D<E> &array2)
 		E *pSrc  = array2.m_pStop;
 		E *pDest = m_pStop;
 		while(pDest > m_pStart)
- 			new (--pDest) E(*--pSrc);
+			new (--pDest) E(*--pSrc);
 	}
 }
 
@@ -266,19 +267,19 @@ void Array2D<E>::copy(const Array2D<E> &array2)
 template<class E>
 float Array2D<E>::det() const
 {
+	// matrix must be quadratic
+	OGDF_ASSERT(size1() == size2());
+
 	int a = m_a;
 	int b = m_b;
 	int c = m_c;
 	int d = m_d;
-	int m = m_b - m_a + 1;
 	int n = m_lenDim2;
 
 	int i, j;
 	int rem_i, rem_j, column;
 
 	float determinant = 0.0;
-
-	OGDF_ASSERT(m == n);
 
 	switch(n) {
 	case 0:

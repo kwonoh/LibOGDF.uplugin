@@ -1,9 +1,9 @@
 /*
- * $Revision: 2615 $
+ * $Revision: 3170 $
  *
  * last checkin:
- *   $Author: gutwenger $
- *   $Date: 2012-07-16 14:23:36 +0200 (Mo, 16. Jul 2012) $
+ *   $Author: beyer $
+ *   $Date: 2012-12-20 11:36:44 +0100 (Thu, 20 Dec 2012) $
  ***************************************************************/
 
 /** \file
@@ -130,6 +130,11 @@ public:
 
 	//! Returns true iff the array is associated with a graph.
 	bool valid() const { return (Array<T>::low() <= Array<T>::high()); }
+
+	//! Returns a pointer to the associated graph.
+	const Graph *graphOf() const {
+		return m_pGraph;
+	}
 
 	//! Returns a reference to the element with index \a adj.
 	const T &operator[](adjEntry adj) const {

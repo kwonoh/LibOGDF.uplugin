@@ -1,5 +1,5 @@
 /*
- * $Revision: 2564 $
+ * $Revision: 3431 $
  *
  * last checkin:
  *   $Author:klein $
@@ -94,21 +94,20 @@ public:
 	//! build a heap out of a given set of elements
 	virtual void makeHeap() = 0;
 
-	HeapObject minRet() { }
+	//HeapObject minRet() { }
 
 	//*******************************************************
 	//Modification
 
-	//! insert a new element with priority key
-	virtual void insert(HeapObject, Priority /* key */) { }
+	// insert a new element with priority key
+	//virtual void insert(HeapObject, Priority /* key */) { }
 	//extractMin
 	//derived classes should decide themselves if they have
 	//a specific delete function
 	//virtual void delete() = 0;
 
-	//! update the data structure by decreasing the key of an object
-	//TODO: Does not make much sense without an object parameter
-	virtual void decreaseKey() { }
+	/// update the data structure by decreasing the key of an object
+	//virtual void decreaseKey() { }
 
 	//*******************************************************
 	//constant functions

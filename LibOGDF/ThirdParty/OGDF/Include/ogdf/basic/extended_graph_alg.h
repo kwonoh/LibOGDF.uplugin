@@ -1,9 +1,9 @@
 /*
- * $Revision: 2615 $
+ * $Revision: 3927 $
  *
  * last checkin:
- *   $Author: gutwenger $
- *   $Date: 2012-07-16 14:23:36 +0200 (Mo, 16. Jul 2012) $
+ *   $Author: beyer $
+ *   $Date: 2014-02-20 14:03:30 +0100 (Thu, 20 Feb 2014) $
  ***************************************************************/
 
 /** \file
@@ -50,8 +50,9 @@
 
 #include <ogdf/cluster/ClusterGraph.h>
 #include <ogdf/basic/BinaryHeap2.h>
+#include <ogdf/basic/DisjointSets.h>
 #include <ogdf/planarity/BoyerMyrvold.h>
-#include <limits>
+
 
 namespace ogdf {
 
@@ -305,75 +306,89 @@ T computeMinST(const Graph &G, const EdgeArray<T> &weight, NodeArray<edge> &pred
 template<typename T>
 T computeMinST(node s, const Graph &G, const EdgeArray<T> &weight, NodeArray<edge> &pred, EdgeArray<bool> &isInTree)
 {
-	//our priority queue storing the front vertices
-	BinaryHeap2<T, node> pq;
+	BinaryHeap2<T, node> pq(G.numberOfNodes()); // priority queue of front vertices
+	NodeArray<int> pqpos(G, -1); // position of each node in pq
 
-	//initialize tree flag for edges
-	edge e;
-	forall_edges(e, G)
-	{
-		isInTree[e] = false;
+	// insert start node
+	T tmp(0);
+	pq.insert(s, tmp, &pqpos[s]);
+
+	// extract the nodes again along a minimum ST
+	NodeArray<bool> processed(G, false);
+	pred.init(G, NULL);
+	while (!pq.empty()) {
+		const node v = pq.extractMin();
+		processed[v] = true;
+		for (adjEntry adj = v->firstAdj(); adj; adj = adj->succ()) {
+			const node w = adj->twinNode();
+			const edge e = adj->theEdge();
+			const int wPos = pqpos[w];
+			if (wPos == -1) {
+				tmp = weight[e];
+				pq.insert(w, tmp, &pqpos[w]);
+				pred[w] = e;
+			} else
+			if (!processed[w]
+			 && weight[e] < pq.getPriority(wPos)) {
+				pq.decreaseKey(wPos, weight[e]);
+				pred[w] = e;
+			}
+		}
 	}
 
-	//array to save the position information from pq
-	int* pqpos = new int[G.numberOfNodes()];
-
-	int i = 0;
-	NodeArray<int> vIndex(G);
-	//array that tells us if node is already processed
-	NodeArray<bool> processed(G);
-	//predecessor of node v is given by an edge (w,v)
-
-	//insert nodes into pr
-	node v = G.firstNode();
-	T prio = std::numeric_limits<T>::max();;
-	while (v != 0)
-	{
-		vIndex[v] = i;
-		pq.insert(v, prio, &(pqpos[i++]));
-		processed[v] = false;
-		pred[v] = 0;
-		v = v->succ();
-	}//while all nodes
-	// decrease start node
-	pq.decreaseKey(pqpos[vIndex[s]], 0.0);
-
-	//extract the nodes again along a minimum ST
-	while (!pq.empty())
-	{
-		v = pq.extractMin();
-		processed[v] = true;
-		forall_adj_edges(e, v)
-		{
-			node w = e->opposite(v);
-
-			int posofw = pqpos[vIndex[w]];
-			if ((!processed[w]) && (weight[e] < pq.getPriority(posofw)))
-			{
-				pq.decreaseKey(posofw, weight[e]);
-				pred[w] = e;
-			}//if improvement
-		}
-	}//while pq
-
-	//only for connected graphs
 	int rootcount = 0;
-	T treeWeight = 0.0;
-	forall_nodes(v, G)
-	{
-		if (pred[v] == 0) rootcount++;
-		else
-		{
+	T treeWeight = 0;
+	isInTree.init(G, false);
+	for (node v = G.firstNode(); v; v = v->succ()) {
+		if (!pred[v]) {
+			++rootcount;
+		} else {
 			isInTree[pred[v]] = true;
 			treeWeight += weight[pred[v]];
 		}
 	}
-	OGDF_ASSERT(rootcount == 1);
+	OGDF_ASSERT(rootcount == 1); // is connected
 
-	delete[] pqpos;
 	return treeWeight;
 }//computeMinST
 
+//! Reduce a graph to its minimum spanning tree (MST) using Kruskal's algorithm
+/**
+ * @tparam T        is the numeric type for edge weights.
+ * @param  G        is the input graph.
+ * @param  weight   is an edge array with the edge weights.
+ * @return the sum of the edge weights in the computed tree.
+ **/
+template<typename T>
+T makeMinimumSpanningTree(Graph &G, const EdgeArray<T> &weight)
+{
+	T total(0);
+	List< Prioritized<edge, T> > sortEdges;
+	for (edge e = G.firstEdge(); e; e = e->succ()) {
+		sortEdges.pushBack(Prioritized<edge,T>(e, weight[e]));
+	}
+	sortEdges.quicksort();
+
+	// now let's do Kruskal's algorithm
+	NodeArray<int> setID(G);
+	DisjointSets<> uf(G.numberOfNodes());
+	for (node v = G.firstNode(); v; v = v->succ()) {
+		setID[v] = uf.makeSet();
+	}
+
+	for (ListConstIterator< Prioritized<edge,T> > it = sortEdges.begin(); it.valid(); ++it) {
+		const edge e = (*it).item();
+		const int v = setID[e->source()];
+		const int w = setID[e->target()];
+		if (uf.find(v) != uf.find(w)) {
+			uf.link(uf.find(v), uf.find(w));
+			total += weight[e];
+		} else {
+			G.delEdge(e);
+		}
+	}
+	return total;
+}
 
 //! Returns true, if G is planar, false otherwise.
 /**

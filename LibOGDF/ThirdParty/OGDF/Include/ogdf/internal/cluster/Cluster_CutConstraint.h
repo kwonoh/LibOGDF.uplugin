@@ -1,9 +1,9 @@
 /*
- * $Revision: 2523 $
+ * $Revision: 3091 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-02 20:59:27 +0200 (Mon, 02 Jul 2012) $
+ *   $Date: 2012-11-30 11:07:34 +0100 (Fri, 30 Nov 2012) $
  ***************************************************************/
 
 /** \file
@@ -51,7 +51,7 @@
 #include <ogdf/internal/cluster/Cluster_EdgeVar.h>
 #include <ogdf/internal/cluster/basics.h>
 
-#include <abacus/constraint.h>
+#include <ogdf/abacus/constraint.h>
 
 namespace ogdf {
 
@@ -59,14 +59,14 @@ class CutConstraint : public BaseConstraint {
 
 public:
 
-	CutConstraint(ABA_MASTER *master, ABA_SUB *sub, List<nodePair> &edges);
+	CutConstraint(abacus::Master *master, abacus::Sub *sub, List<nodePair> &edges);
 
 	virtual ~CutConstraint();
 
 	// Computes and returns the coefficient for the given variable
-	virtual double coeff(ABA_VARIABLE *v) { EdgeVar *ev = (EdgeVar *)v; return (double)coeff(ev->sourceNode(), ev->targetNode()); }
-	inline int coeff(const nodePair& n) { return coeff(n.v1,n.v2); }
-	int coeff(node n1, node n2);
+	virtual double coeff(const abacus::Variable *v) const { const EdgeVar *ev = (const EdgeVar *)v; return (double)coeff(ev->sourceNode(), ev->targetNode()); }
+	inline int coeff(const nodePair& n) const { return coeff(n.v1,n.v2); }
+	int coeff(node n1, node n2) const;
 
 	void printMe(ostream& out) const {
 		out << "[CutCon: ";

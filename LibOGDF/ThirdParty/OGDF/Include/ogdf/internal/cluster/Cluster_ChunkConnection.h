@@ -1,9 +1,9 @@
 /*
- * $Revision: 2523 $
+ * $Revision: 3091 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-02 20:59:27 +0200 (Mon, 02 Jul 2012) $
+ *   $Date: 2012-11-30 11:07:34 +0100 (Fri, 30 Nov 2012) $
  ***************************************************************/
 
 /** \file
@@ -58,7 +58,7 @@
 #include <ogdf/internal/cluster/Cluster_EdgeVar.h>
 #include <ogdf/internal/cluster/basics.h>
 
-#include <abacus/constraint.h>
+#include <ogdf/abacus/constraint.h>
 
 namespace ogdf {
 
@@ -66,25 +66,25 @@ namespace ogdf {
 class ChunkConnection : public BaseConstraint {
 #ifdef OGDF_DEBUG
 	//Mainly for debugging output purposes
-	friend class Master;
-	friend class Sub;
+	friend class MaxCPlanarMaster;
+	friend class MaxCPlanarSub;
 	friend class CPlanarMaster;
 	friend class CPlanarSub;
 #endif
 public:
 
-	ChunkConnection(ABA_MASTER *master, const ArrayBuffer<node>& chunk, const ArrayBuffer<node>& cochunk);
+	ChunkConnection(abacus::Master *master, const ArrayBuffer<node>& chunk, const ArrayBuffer<node>& cochunk);
 
 	virtual ~ChunkConnection();
 
 	// Computes and returns the coefficient for the given variable
-	virtual double coeff(ABA_VARIABLE *v) {
-		EdgeVar *ev = (EdgeVar *)v;
+	virtual double coeff(const abacus::Variable *v) const {
+		const EdgeVar *ev = (const EdgeVar *)v;
 		//Safe for both clustered planarity testing and maximum c-planar subgraph
 		return (ev->theEdgeType() != EdgeVar::CONNECT) ? 0.0 : (double)coeff(ev->sourceNode(), ev->targetNode());
 	}
-	inline int coeff(const nodePair& n) { return coeff(n.v1,n.v2); }
-	int coeff(node v1, node v2);
+	inline int coeff(const nodePair& n) const { return coeff(n.v1,n.v2); }
+	int coeff(node v1, node v2) const;
 
 	void printMe(ostream& out) const {
 		out << "[ChunkCon: (";

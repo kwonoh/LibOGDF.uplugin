@@ -1,9 +1,9 @@
 /*
- * $Revision: 2523 $
+ * $Revision: 3188 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-02 20:59:27 +0200 (Mon, 02 Jul 2012) $
+ *   $Date: 2013-01-10 09:53:32 +0100 (Thu, 10 Jan 2013) $
  ***************************************************************/
 
 /** \file
@@ -90,7 +90,7 @@ public:
 	 * It is required that the option currently stores a module, i.e.,
 	 * valid() is true.
 	 */
-	M &get() { return *m_pModule; }
+	M &get() const { return *m_pModule; }
 };
 
 

@@ -1,9 +1,9 @@
 /*
- * $Revision: 2564 $
+ * $Revision: 3188 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-07 00:03:48 +0200 (Sa, 07. Jul 2012) $
+ *   $Date: 2013-01-10 09:53:32 +0100 (Thu, 10 Jan 2013) $
  ***************************************************************/
 
 /** \file
@@ -50,7 +50,7 @@
 
 
 
-#include <ogdf/planarity/PlanRepUML.h>
+#include <ogdf/planarity/PlanRep.h>
 #include <ogdf/cluster/ClusterGraphAttributes.h>
 #include <ogdf/cluster/ClusterGraph.h>
 #include <ogdf/cluster/ClusterArray.h>

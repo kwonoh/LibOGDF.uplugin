@@ -1,9 +1,9 @@
 /*
- * $Revision: 2615 $
+ * $Revision: 3556 $
  *
  * last checkin:
- *   $Author: gutwenger $
- *   $Date: 2012-07-16 14:23:36 +0200 (Mo, 16. Jul 2012) $
+ *   $Author: beyer $
+ *   $Date: 2013-06-07 19:36:11 +0200 (Fri, 07 Jun 2013) $
  ***************************************************************/
 
 /** \file
@@ -74,6 +74,11 @@ template<class E, class INDEX = int> class BoundedQueue {
 	E *m_pFirst; //! Pointer to  first element of total array.
 
 public:
+	//! Creates a non-valid bounded queue. Needs to be reinitialized first.
+	BoundedQueue() {
+		m_pStart = m_pEnd = m_pFirst = m_pStop = 0;
+	}
+
 	//! Constructs an empty bounded queue for at most \a n elements.
 	explicit BoundedQueue(INDEX n) {
 		OGDF_ASSERT(n >= 1)
@@ -90,6 +95,23 @@ public:
 
 	// destruction
 	~BoundedQueue() { delete [] m_pFirst; }
+
+	//! Reinitializes the bounded queue to a non-valid bounded queue.
+	void init() {
+		delete [] m_pFirst;
+		m_pStart = m_pEnd = m_pFirst = m_pStop = 0;
+	}
+
+	//! Reinitializes the bounded queue to a bounded queue for at most \a n elements.
+	void init(INDEX n) {
+		delete [] m_pFirst;
+
+		OGDF_ASSERT(n >= 1)
+		m_pStart = m_pEnd = m_pFirst = new E[n+1];
+		if (m_pFirst == 0) OGDF_THROW(InsufficientMemoryException);
+
+		m_pStop = m_pFirst+n+1;
+	}
 
 	//! Returns front element.
 	const E &top() const {
@@ -120,20 +142,20 @@ public:
 	//! Returns current size of the queue.
 	INDEX size() const {
 		return (m_pEnd >= m_pStart) ?
-			(m_pEnd - m_pStart) :
-			(m_pEnd-m_pFirst)+(m_pStop-m_pStart);
+			(INDEX)(m_pEnd - m_pStart) :
+			(INDEX)((m_pEnd-m_pFirst)+(m_pStop-m_pStart));
 	}
 
 	//! Returns the capacity of the bounded queue.
-	INDEX capacity() const { return (m_pStop - m_pFirst)-1; }
+	INDEX capacity() const { return (INDEX)((m_pStop - m_pFirst)-1); }
 
 	//! Returns true iff the queue is empty.
 	bool empty() { return m_pStart == m_pEnd; }
 
 	//! Returns true iff the queue is full.
 	bool full() {
-		INDEX h = m_pEnd-m_pStart
-		return ( h>=0 ) ?
+		INDEX h = m_pEnd-m_pStart;
+		return ( h >= 0 ) ?
 			(h == m_pStop-m_pFirst-1) :
 			(h == -1);
 	}

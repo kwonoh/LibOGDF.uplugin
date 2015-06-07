@@ -1,9 +1,9 @@
 /*
- * $Revision: 2523 $
+ * $Revision: 3833 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-02 20:59:27 +0200 (Mon, 02 Jul 2012) $
+ *   $Date: 2013-11-13 11:23:15 +0100 (Wed, 13 Nov 2013) $
  ***************************************************************/
 
 /** \file
@@ -50,18 +50,27 @@
 
 
 
-#include <ogdf/module/TwoLayerCrossMin.h>
+#include <ogdf/module/LayerByLayerSweep.h>
 
 
 namespace ogdf {
 
 
 //! The median heuristic for 2-layer crossing minimization.
-class OGDF_EXPORT MedianHeuristic : public TwoLayerCrossMin
+class OGDF_EXPORT MedianHeuristic : public LayerByLayerSweep
 {
 public:
+	//! Creates a new instance of the median heuristic.
+	MedianHeuristic() { }
+
+	//! Creates a new instance of the median heuristic.
+	MedianHeuristic(const MedianHeuristic &crossMin) { }
+
+	//! Returns a new instance of the median heuristic with the same option settings.
+	LayerByLayerSweep *clone() const { return new MedianHeuristic; }
+
 	//! Initializes crossing minimization for hierarchy \a H.
-	void init (const Hierarchy &H) { m_weight.init(H); }
+	void init (const HierarchyLevels &levels) { m_weight.init(levels.hierarchy()); }
 
 	//! Calls the median heuristic for level \a L.
 	void call (Level &L);

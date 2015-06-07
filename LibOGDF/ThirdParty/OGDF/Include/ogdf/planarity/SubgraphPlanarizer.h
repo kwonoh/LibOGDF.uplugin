@@ -1,15 +1,15 @@
 /*
- * $Revision: 2523 $
+ * $Revision: 3472 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-02 20:59:27 +0200 (Mon, 02 Jul 2012) $
+ *   $Date: 2013-04-29 15:52:12 +0200 (Mon, 29 Apr 2013) $
  ***************************************************************/
 
 /** \file
  * \brief Declaration of class SubgraphPlanarizer.
  *
- * \author Markus Chimani
+ * \author Markus Chimani, Carsten Gutwenger
  *
  * \par License:
  * This file is part of the Open Graph Drawing Framework (OGDF).
@@ -44,11 +44,16 @@
 #ifndef OGDF_SUBGRAPH_PLANARIZER_H
 #define OGDF_SUBGRAPH_PLANARIZER_H
 
+#include <ogdf/module/EdgeInsertionModule.h>
 #include <ogdf/module/CrossingMinimizationModule.h>
 #include <ogdf/module/PlanarSubgraphModule.h>
-#include <ogdf/module/EdgeInsertionModule.h>
 #include <ogdf/basic/ModuleOption.h>
 #include <ogdf/basic/Logger.h>
+
+// C++11
+#ifdef OGDF_HAVE_CPP11
+#include <random>
+#endif
 
 
 namespace ogdf
@@ -87,6 +92,12 @@ namespace ogdf
  *     <td><i>setTimeout</i><td>bool<td>true
  *     <td>If set to true, the time limit is also passed to submodules; otherwise,
  *     a timeout might be checked late when a submodule requires a lot of runtime.
+ *   </tr><tr>
+ *     <td><i>maxThreads</i><td>int<td>System::numberOfProcessors()
+ *     <td>This is the maximal number of threads that will be used for parallelizing the
+ *     algorithm. At the moment, each permutation is parallelized, hence the there will
+ *     never be used more threads than permutations. To achieve sequential behaviour, set
+ *     maxThreads to 1.
  *   </tr>
  * </table>
  *
@@ -110,35 +121,31 @@ namespace ogdf
 */
 class OGDF_EXPORT SubgraphPlanarizer : public CrossingMinimizationModule, public Logger
 {
-	class CrossingStructure
-	{
-	public:
-		CrossingStructure() : m_numCrossings(0) { }
-		void init(PlanRep &PG, int weightedCrossingNumber);
-		void restore(PlanRep &PG, int cc);
-
-		int numberOfCrossings() const { return m_numCrossings; }
-		int weightedCrossingNumber() const { return m_weightedCrossingNumber; }
-		const SListPure<int> &crossings(edge e) const { return m_crossings[e]; }
-
-	private:
-		int m_numCrossings;
-		int m_weightedCrossingNumber;
-		EdgeArray<SListPure<int> > m_crossings;
-	};
+	class ThreadMaster;
+	class Worker;
 
 protected:
 	//! Implements the algorithm call.
-	virtual ReturnType doCall(PlanRep &PG,
+	virtual ReturnType doCall(PlanRep &pr,
 		int cc,
-		const EdgeArray<int>  &cost,
-		const EdgeArray<bool> &forbid,
-		const EdgeArray<unsigned int>  &subgraphs,
+		const EdgeArray<int>      *pCostOrig,
+		const EdgeArray<bool>     *pForbiddenOrig,
+		const EdgeArray<__uint32> *pEdgeSubGraphs,
 		int& crossingNumber);
 
 public:
-	//! Creates an instance of subgraph planarizer.
+	//! Creates an instance of subgraph planarizer with default settings.
 	SubgraphPlanarizer();
+
+	//! Creates an instance of subgraph planarizer with the same settings as \a planarizer.
+	SubgraphPlanarizer(const SubgraphPlanarizer &planarizer);
+
+	//! Returns a new instance of subgraph planarizer with the same option settings.
+	virtual CrossingMinimizationModule *clone() const;
+
+	//! Assignment operator. Copies option settings only.
+	SubgraphPlanarizer &operator=(const SubgraphPlanarizer &planarizer);
+
 
 	//! Sets the module option for the computation of the planar subgraph.
 	void setSubgraph(PlanarSubgraphModule *pSubgraph) {
@@ -162,12 +169,42 @@ public:
 	//! Sets the option <i>setTimeout</i> to \a b.
 	void setTimeout(bool b) { m_setTimeout = b; }
 
+	//! Returns the maximal number of used threads.
+	int maxThreads() const { return m_maxThreads; }
+
+	//! Sets the maximal number of used threads to \a n.
+	void maxThreads(int n) {
+#ifndef OGDF_MEMORY_POOL_NTS
+		m_maxThreads = n;
+#endif
+	}
+
 private:
+	static void doWorkHelper(ThreadMaster &master, EdgeInsertionModule &inserter
+#ifdef OGDF_HAVE_CPP11
+		, std::minstd_rand &rng
+#endif
+	);
+
+	static bool doSinglePermutation(
+		PlanRepLight &prl,
+		int cc,
+		const EdgeArray<int>  *pCost,
+		const EdgeArray<bool> *pForbid,
+		const EdgeArray<__uint32> *pEdgeSubGraphs,
+		Array<edge> &deletedEdges,
+		EdgeInsertionModule &inserter,
+#ifdef OGDF_HAVE_CPP11
+		std::minstd_rand &rng,
+#endif
+		int &crossingNumber);
+
 	ModuleOption<PlanarSubgraphModule>  m_subgraph; //!< The planar subgraph algorithm.
 	ModuleOption<EdgeInsertionModule>   m_inserter; //!< The edge insertion module.
 
 	int m_permutations;	//!< The number of permutations.
 	bool m_setTimeout;	//!< The option for setting timeouts in submodules.
+	int m_maxThreads;	//!< The maximal number of used threads.
 };
 
 }

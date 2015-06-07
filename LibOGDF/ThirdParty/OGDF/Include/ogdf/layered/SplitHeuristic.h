@@ -1,9 +1,9 @@
 /*
- * $Revision: 2523 $
+ * $Revision: 3210 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-02 20:59:27 +0200 (Mon, 02 Jul 2012) $
+ *   $Date: 2013-01-15 11:58:53 +0100 (Tue, 15 Jan 2013) $
  ***************************************************************/
 
 /** \file
@@ -59,14 +59,23 @@ namespace ogdf {
 class OGDF_EXPORT SplitHeuristic : public TwoLayerCrossMinSimDraw
 {
 public:
+	//! Creates a new instance of the split heuristic.
+	SplitHeuristic() { }
+
+	//! Creates a new instance of the split heuristic.
+	SplitHeuristic(const SplitHeuristic &crossMin) { }
+
+	//! Returns a new instance of the splitheurisitc with the same option settings.
+	TwoLayerCrossMinSimDraw *clone() const { return new SplitHeuristic(*this); }
+
 	//! Initializes crossing minimization for hierarchy \a H.
-	void init (const Hierarchy &H);
+	void init (const HierarchyLevels &levels);
 
 	//! Calls the split heuristic for level \a L.
 	void call (Level &L);
 
 	//! Calls the median heuristic for level \a L (simultaneous drawing).
-	void call (Level &L, const EdgeArray<unsigned int> *edgeSubGraph);
+	void call (Level &L, const EdgeArray<__uint32> *edgeSubGraphs);
 
 	//! Does some clean-up after calls.
 	void cleanup ();

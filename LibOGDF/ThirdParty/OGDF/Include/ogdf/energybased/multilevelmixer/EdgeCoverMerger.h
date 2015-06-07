@@ -1,9 +1,9 @@
 /*
- * $Revision: 2523 $
+ * $Revision: 3553 $
  *
  * last checkin:
- *   $Author: gutwenger $
- *   $Date: 2012-07-02 20:59:27 +0200 (Mon, 02 Jul 2012) $
+ *   $Author: beyer $
+ *   $Date: 2013-06-07 19:36:02 +0200 (Fri, 07 Jun 2013) $
  ***************************************************************/
 
 /** \file
@@ -40,14 +40,14 @@
  * \see  http://www.gnu.org/copyleft/gpl.html
  ***************************************************************/
 
-#include <ogdf/energybased/multilevelmixer/MultilevelBuilder.h>
-
 #ifdef _MSC_VER
 #pragma once
 #endif
 
 #ifndef OGDF_EDGE_COVER_MERGER_H
 #define OGDF_EDGE_COVER_MERGER_H
+
+#include <ogdf/energybased/multilevelmixer/MultilevelBuilder.h>
 
 namespace ogdf {
 

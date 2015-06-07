@@ -1,9 +1,9 @@
 /*
- * $Revision: 2523 $
+ * $Revision: 2984 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-02 20:59:27 +0200 (Mon, 02 Jul 2012) $
+ *   $Date: 2012-11-07 11:45:58 +0100 (Wed, 07 Nov 2012) $
  ***************************************************************/
 
 /** \file
@@ -53,7 +53,6 @@
 
 #include <ogdf/basic/basic.h>
 #include <math.h>
-#include <limits.h>
 
 
 namespace ogdf {
@@ -259,8 +258,14 @@ template<> class DefHashFunc<void *> {
 template<> class DefHashFunc<double> {
 	public:	size_t hash(const double &key) const {
 		int dummy;
-		return size_t(SIZE_MAX*frexp(key,&dummy));
+		return (size_t)((double)numeric_limits<size_t>::max() * frexp(key,&dummy));
 	}
+};
+
+//! Specialized default hash function for string.
+template<> class DefHashFunc<string> {
+public:
+	size_t hash(const string &key) const;
 };
 
 
@@ -440,13 +445,13 @@ private:
  * German&ndash;English dictionary, and then it iterates over the elements
  * and prints the entries.
  * \code
- *   Hashing<String,String> H;
+ *   Hashing<string,string> H;
  *
  *   H.fastInsert("Hund","dog");
  *   H.fastInsert("Katze","cat");
  *   H.fastInsert("Maus","mouse");
  *
- *   HashConstIterator<String,String> it;
+ *   HashConstIterator<string,string> it;
  *   for(it = H.begin(); it.valid(); ++it)
  *     cout << it.key() << " -> " << it.info() << endl;
  * \endcode

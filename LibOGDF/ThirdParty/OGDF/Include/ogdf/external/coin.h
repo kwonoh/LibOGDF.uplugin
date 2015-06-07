@@ -1,9 +1,9 @@
 /*
- * $Revision: 2614 $
+ * $Revision: 3142 $
  *
  * last checkin:
  *   $Author: chimani $
- *   $Date: 2012-07-16 11:30:08 +0200 (Mo, 16. Jul 2012) $
+ *   $Date: 2012-12-11 13:56:12 +0100 (Tue, 11 Dec 2012) $
  ***************************************************************/
 
 /** \file
@@ -17,6 +17,7 @@
  * \todo Currently, there is only a single implementation of the
  * CoinCallback-class declared herein (necc. for userdefined cuts).
  * This implementation is CPLEX specific.
+ * -- with current coin, it might not even work anymore!
  *
  * \author Markus Chimani
  *
@@ -84,6 +85,8 @@
 			virtual HeuristicReturn heuristicCallback(double& /* objValue */, double* /* solution */) { OGDF_THROW_NO_CALLBACK_EXCEPTION; return HR_Error; }
 			virtual IncumbentReturn incumbentCallback(const double /* objValue */, const double* /* solution */) { OGDF_THROW_NO_CALLBACK_EXCEPTION; return IR_Error; }
 //			virtual BranchReturn branchCallback() { OGDF_THROW_NO_CALLBACK_EXCEPTION; return BR_Error; };
+
+			virtual ~CoinCallbacks() {}
 		private:
 			bool registerCallbacks(OsiSolverInterface* _posi, int callbackTypes);
 		};

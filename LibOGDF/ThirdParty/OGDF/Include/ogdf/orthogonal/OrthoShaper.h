@@ -1,9 +1,9 @@
 /*
- * $Revision: 2573 $
+ * $Revision: 3504 $
  *
  * last checkin:
- *   $Author: gutwenger $
- *   $Date: 2012-07-10 18:48:33 +0200 (Di, 10. Jul 2012) $
+ *   $Author: beyer $
+ *   $Date: 2013-05-16 14:49:39 +0200 (Thu, 16 May 2013) $
  ***************************************************************/
 
 /** \file
@@ -53,7 +53,7 @@
 
 
 #include <ogdf/orthogonal/OrthoRep.h>
-#include <ogdf/planarity/PlanRepUML.h>
+#include <ogdf/uml/PlanRepUML.h>
 
 
 namespace ogdf {
@@ -78,6 +78,11 @@ public:
 	// in traditional mode.
 
 	void call(PlanRepUML &PG,
+		CombinatorialEmbedding &E,
+		OrthoRep &OR,
+		bool fourPlanar = true);
+
+	void call(PlanRep &PG,
 		CombinatorialEmbedding &E,
 		OrthoRep &OR,
 		bool fourPlanar = true);

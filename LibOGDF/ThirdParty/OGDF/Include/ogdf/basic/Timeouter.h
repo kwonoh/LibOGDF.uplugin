@@ -1,9 +1,9 @@
 /*
- * $Revision: 2523 $
+ * $Revision: 3188 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-02 20:59:27 +0200 (Mon, 02 Jul 2012) $
+ *   $Date: 2013-01-10 09:53:32 +0100 (Thu, 10 Jan 2013) $
  ***************************************************************/
 
 /** \file
@@ -54,8 +54,9 @@
 
 namespace ogdf {
 
-//! class for timeout funtionality
-/** Holds a double value of the timeout time (in seconds).
+//! class for timeout funtionality.
+/**
+ *Holds a double value of the timeout time (in seconds).
  * Set the value to some negative value (e.g. -1) to turn the timeout
  * off. Note that 0 seconds is a perfectly feasible timeout value!
  */
@@ -75,6 +76,10 @@ public:
 
 	~Timeouter() { }
 
+	Timeouter &operator=(const Timeouter &t) {
+		m_timeLimit = t.m_timeLimit;
+		return *this;
+	}
 
 	//! sets the time limit for the call (in seconds); <0 means no limit.
 	void timeLimit(double t) {

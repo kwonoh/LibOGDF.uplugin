@@ -1,9 +1,9 @@
 /*
- * $Revision: 2599 $
+ * $Revision: 3504 $
  *
  * last checkin:
- *   $Author: chimani $
- *   $Date: 2012-07-15 22:39:24 +0200 (So, 15. Jul 2012) $
+ *   $Author: beyer $
+ *   $Date: 2013-05-16 14:49:39 +0200 (Thu, 16 May 2013) $
  ***************************************************************/
 
 /** \file
@@ -44,119 +44,105 @@
 #define OGDF_CROSSING_MINIMIZATION_MODULE_H
 
 
-
 #include <ogdf/planarity/PlanRep.h>
-#include <ogdf/basic/extended_graph_alg.h>
 #include <ogdf/basic/Module.h>
-#include <ogdf/basic/Logger.h>
 #include <ogdf/basic/Timeouter.h>
 
 
 namespace ogdf {
 
-/**
- * \brief Interface for crossing minimization algorithms.
- *
- */
-class OGDF_EXPORT CrossingMinimizationModule : public Module, public Timeouter
-{
-public:
-	//! Initializes a crossing minimization module.
-	CrossingMinimizationModule() { }
-
-	// destruction
-	virtual ~CrossingMinimizationModule() { }
-
-	/**
-	 * \brief Computes a planarized representation of the input graph.
-	 *
-	 * @param PG represents the input graph as well as the computed planarized
-	 *        representation after the call. \a PG has to be initialzed as a
-	 *        PlanRep of the input graph and is modified to obatain the planarized
-	 *        representation (crossings are replaced by dummy vertices with degree
-	 *        four.
-	 * @param cc is the number of the connected component in \a PG that is considered.
-	 * @param crossingNumber is assigned the number of crossings.
-	 * @param forbid points to an edge array indicating which edges are not allowed
-	 *        to be crossed, i.e., (*forbid)[e] = true. If forbid = 0, no edges are
-	 *        forbidden.
-	 * @param cost points to an edge array that gives the cost of each edge. If cost
-	 *        = 0, all edges have cost 1.
-	 * @param subgraphs
-	 * \return the status of the result.
-	 */
-	ReturnType call(PlanRep &PG,
-			int cc,
-			int&  crossingNumber,
-			const EdgeArray<int>  * cost = 0,
-			const EdgeArray<bool> * forbid = 0,
-			const EdgeArray<unsigned int> * subgraphs = 0)
+	//! Base class for crossing minimization algorithms.
+	class OGDF_EXPORT CrossingMinimizationModule : public Module, public Timeouter
 	{
-		m_useCost = (cost != 0);
-		m_useForbid = (forbid != 0);
-		m_useSubgraphs = (subgraphs != 0);
+	public:
+		//! Initializes a crossing minimization module (default constructor).
+		CrossingMinimizationModule() { }
 
-		if(!useCost())      cost      = OGDF_NEW EdgeArray<int> (PG.original(), 1);
-		if(!useForbid())    forbid    = OGDF_NEW EdgeArray<bool> (PG.original(), 0);
-		if(!useSubgraphs()) subgraphs = OGDF_NEW EdgeArray<unsigned int> (PG.original(), 1);
+		//! Initializes an crossing minimization module (copy constructor).
+		CrossingMinimizationModule(const CrossingMinimizationModule &cmm) : Timeouter(cmm) { }
 
-		ReturnType R = doCall(PG, cc, *cost, *forbid, *subgraphs, crossingNumber);
+		//! Destructor.
+		virtual ~CrossingMinimizationModule() { }
 
-		if(!useCost())      delete cost;
-		if(!useForbid())    delete forbid;
-		if(!useSubgraphs()) delete subgraphs;
-		return R;
-	};
+		//! Returns a new instance of the crossing minimization module with the same option settings.
+		virtual CrossingMinimizationModule *clone() const = 0;
 
-	//! Computes a planarized representation of the input graph (shorthand for call)
-	ReturnType operator()(PlanRep &PG,
+
+		//! Computes a planarized representation of the input graph.
+		/**
+		 * @param pr             represents the input graph as well as the computed planarized representation
+		 *                       after the call. \a pr has to be initialzed as a PlanRep of the input graph and
+		 *                       is modified to obatain the planarized representation (crossings are replaced
+		 *                       by dummy vertices with degree four).
+		 * @param cc             is the index of the connected component in \a pr that is considered.
+		 * @param crossingNumber is assigned the number of crossings.
+		 * @param pCostOrig      points to an edge array (of the original graph) that gives the cost of each edge.
+		 *                       May be a 0-pointer, in which case all edges have cost 1.
+		 * @param pForbiddenOrig points to an edge array (of the original graph) specifying which edges are not
+		 *                       allowed to be crossed. May be a 0-pointer, in which case no edges are forbidden.
+		 * @param pEdgeSubGraphs points to an edge array (of the original graph) specifying to which subgraph an edge belongs.
+		 * @return the status of the result.
+		 */
+		ReturnType call(PlanRep &pr,
 			int cc,
 			int&  crossingNumber,
-			const EdgeArray<int>  * cost = 0,
-			const EdgeArray<bool> * forbid = 0,
-			const EdgeArray<unsigned int> * const subgraphs = 0) {
-		return call(PG, cc, crossingNumber, cost, forbid, subgraphs);
+			const EdgeArray<int>      *pCostOrig = 0,
+			const EdgeArray<bool>     *pForbiddenOrig = 0,
+			const EdgeArray<__uint32> *pEdgeSubGraphs = 0)
+		{
+			return doCall(pr, cc, pCostOrig, pForbiddenOrig, pEdgeSubGraphs, crossingNumber);
+		}
+
+		//! Computes a planarized representation of the input graph.
+		/**
+		 * @param pr             represents the input graph as well as the computed planarized representation
+		 *                       after the call. \a pr has to be initialzed as a PlanRep of the input graph and
+		 *                       is modified to obatain the planarized representation (crossings are replaced
+		 *                       by dummy vertices with degree four).
+		 * @param cc             is the index of the connected component in \a pr that is considered.
+		 * @param crossingNumber is assigned the number of crossings.
+		 * @param pCostOrig      points to an edge array (of the original graph) that gives the cost of each edge.
+		 *                       May be a 0-pointer, in which case all edges have cost 1.
+		 * @param pForbiddenOrig points to an edge array (of the original graph) specifying which edges are not
+		 *                       allowed to be crossed. May be a 0-pointer, in which case no edges are forbidden.
+		 * @param pEdgeSubGraphs points to an edge array (of the original graph) specifying to which subgraph an edge belongs.
+		 * @return the status of the result.
+		 */
+		ReturnType operator()(PlanRep &pr,
+			int cc,
+			int & crossingNumber,
+			const EdgeArray<int>      *pCostOrig = 0,
+			const EdgeArray<bool>     *pForbiddenOrig = 0,
+			const EdgeArray<__uint32> *pEdgeSubGraphs = 0)
+		{
+			return call(pr, cc, crossingNumber, pCostOrig, pForbiddenOrig, pEdgeSubGraphs);
+		}
+
+	protected:
+		//! Actual algorithm call that needs to be implemented by derived classes.
+		/**
+		 * @param pr             represents the input graph as well as the computed planarized representation
+		 *                       after the call. \a pr has to be initialzed as a PlanRep of the input graph and
+		 *                       is modified to obatain the planarized representation (crossings are replaced
+		 *                       by dummy vertices with degree four).
+		 * @param cc             is the index of the connected component in \a pr that is considered.
+		 * @param crossingNumber is assigned the number of crossings.
+		 * @param pCostOrig      points to an edge array (of the original graph) that gives the cost of each edge.
+		 *                       May be a 0-pointer, in which case all edges have cost 1.
+		 * @param pForbiddenOrig points to an edge array (of the original graph) specifying which edges are not
+		 *                       allowed to be crossed. May be a 0-pointer, in which case no edges are forbidden.
+		 * @param pEdgeSubGraphs points to an edge array (of the original graph) specifying to which subgraph an edge belongs.
+		 * @return the status of the result.
+		 */
+		virtual ReturnType doCall(PlanRep &pr,
+			int cc,
+			const EdgeArray<int>      *pCostOrig,
+			const EdgeArray<bool>     *pForbiddenOrig,
+			const EdgeArray<__uint32> *pEdgeSubGraphs,
+			int &crossingNumber) = 0;
+
+		OGDF_MALLOC_NEW_DELETE
 	};
-
-	//! Returns true iff edge costs are given.
-	bool useCost() const { return m_useCost; }
-
-	//! Returns true iff forbidden edges are given.
-	bool useForbid() const { return m_useForbid; }
-
-	bool useSubgraphs() const { return m_useSubgraphs; }
-
-protected:
-	/**
-	 * \brief Actual algorithm call that needs to be implemented by derived classed.
-	 *
-	 * @param PG represents the input graph as well as the computed planarized
-	 *        representation after the call. \a PG is initialzed as a
-	 *        PlanRep of the input graph and has to be modified so that it represents
-	 *        the planarized representation (crossings are replaced by dummy vertices
-	 *        with degree four).
-	 * @param cc is the number of the connected component in \a PG that is considered.
-	 * @param crossingNumber is assigned the number of crossings.
-	 * @param forbid points to an edge array indicating which edges are not allowed
-	 *        to be crossed, i.e., (*forbid)[e] = true.
-	 * @param cost points to an edge array that gives the cost of each edge.
-	 * @param subgraphs
-	 * \return the status of the result.
-	 */
-	virtual ReturnType doCall(PlanRep &PG,
-		int cc,
-		const EdgeArray<int>  &cost,
-		const EdgeArray<bool> &forbid,
-		const EdgeArray<unsigned int> &subgraphs,
-		int& crossingNumber) = 0;
-
-	OGDF_MALLOC_NEW_DELETE
-
-private:
-	bool m_useCost; //!< True iff edge costs are given.
-	bool m_useForbid; //!< True iff forbidden edges are given.
-	bool m_useSubgraphs;
-};
 
 } // end namespace ogdf
 

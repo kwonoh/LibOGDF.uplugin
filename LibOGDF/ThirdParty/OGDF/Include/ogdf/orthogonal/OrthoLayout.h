@@ -1,17 +1,16 @@
 /*
- * $Revision: 2564 $
+ * $Revision: 3188 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-07 00:03:48 +0200 (Sa, 07. Jul 2012) $
+ *   $Date: 2013-01-10 09:53:32 +0100 (Thu, 10 Jan 2013) $
  ***************************************************************/
 
 /** \file
  * \brief Declaration of class OrthoLayout which represents an
- *        orthogonal planar drawing algorithm for mixed-upward
- *        embedded graphs.
+ *        orthogonal planar drawing algorithm.
  *
- * \author Carsten Gutwenger and Sebastian Leipert
+ * \author Carsten Gutwenger, Sebastian Leipert, Karsten Klein
  *
  * \par License:
  * This file is part of the Open Graph Drawing Framework (OGDF).
@@ -48,8 +47,8 @@
 #endif
 
 
-#ifndef OGDF_UML_ORTHO_LAYOUT_H
-#define OGDF_UML_ORTHO_LAYOUT_H
+#ifndef OGDF_ORTHO_LAYOUT_H
+#define OGDF_ORTHO_LAYOUT_H
 
 
 #include <ogdf/module/LayoutPlanRepModule.h>
@@ -58,154 +57,109 @@
 
 namespace ogdf {
 
-	enum OptionProfile { standard, minBendsperEdge, fullService }; //just to think about it...
 
-	enum OrthoDir;
-
-
-//---------------------------------------------------------
-// OrthoLayout
-// represents planar orthogonal drawing algorithm for
-// mixed-upward planar embedded graphs (UML-diagrams)
-//---------------------------------------------------------
+//! The Orthogonal layout algorithm for planar graphs.
 class OGDF_EXPORT OrthoLayout : public LayoutPlanRepModule
 {
 public:
-	// constructor
+	//! Creates an instance of Orthogonal layout and sets options to default values.
 	OrthoLayout();
 
 
 	// calls planar UML layout algorithm. Input is a planarized representation
 	// PG of a connected component of the graph, output is a layout of the
 	// (modified) planarized representation in drawing
-	void call(PlanRepUML &PG, adjEntry adjExternal, Layout &drawing);
+	//! Calls the layout algorithm for planarized representation \a PG.
+	/**
+	 * \pre \a PG is embedded and \a adjExternal is an adjecenty entry in \a PG.
+	 *
+	 * @param PG          is the planarized representation for which a layout shall be computed.
+	 *                    \a PG may be modified during the call.
+	 * @param adjExternal is an adjaceny entry in \a PG that shall be on the external
+	 *                    face of the drawing.
+	 * @param drawing     is assigned the final layout.
+	 */
+	void call(PlanRep &PG, adjEntry adjExternal, Layout &drawing);
 
-	//
-	// options
+	/** @}
+	 *  @name Optional parameters
+	 *  @{
+	 */
 
-	// the minimum distance between edges and vertices
+	//! Returns the minimum distance between edges and vertices.
 	double separation() const {
 		return m_separation;
 	}
 
+	//! Sets the minimum distance between vertices.
 	void separation(double sep) {
 		m_separation = sep;
 	}
 
-	// cOverhang * separation is the minimum distance between the glue point
-	// of an edge and a corner of the vertex boundary
+	//! Returns the option \a cOverhang, which specifies the minimal distance of incident edges to the corner of a vertex.
+	/**
+	 * \a cOverhang * \a separation is the minimum distance between the glue point of an edge and a corner of the vertex boundary.
+	 */
 	double cOverhang() const {
 		return m_cOverhang;
 	}
 
+	//! Sets the option \a cOverhang, which specifies the minimal distance of incident edges to the corner of a vertex.
 	void cOverhang(double c) {
 		m_cOverhang = c;
 	}
 
-
-	// the distance from the tight bounding box to the boundary of the drawing
+	//! Returns the desired margin around the drawing.
+	/**
+	 * This is the distance between the tight bounding box and the boundary of the drawing.
+	 */
 	double margin() const {
 		return m_margin;
 	}
 
+	//! Sets the desired margin around the drawing.
 	void margin(double m) {
 		m_margin = m;
 	}
 
+	//! Returns whether the currently selected orthogonaliaztion model is \e progressive.
+	bool progressive() const { return m_progressive; }
 
-	// the preferred direction of generalizations
-	OrthoDir preferedDir() const {
-		return m_preferedDir;
-	}
+	//! Selects if the progressive (true) or traditional (false) orthogonalization model is used.
+	/**
+	 * In the progressive model, 180 degree angles at degree-2 nodes are preferred.
+	 */
+	void progressive(bool b) { m_progressive = b; }
 
-	void preferedDir(OrthoDir dir) {
-		m_preferedDir = dir;
-	}
+	//! Returns whether scaling is used in the compaction phase.
+	bool scaling() const { return m_useScalingCompaction; }
 
-	// cost of associations
-	int costAssoc() const {
-		return m_costAssoc;
-	}
-
-	void costAssoc(int c) {
-		m_costAssoc = c;
-	}
-
-	// cost of generalizations
-	int costGen() const {
-		return m_costGen;
-	}
-
-	void costGen(int c) {
-		m_costGen = c;
-	}
-
-	//! Set the option profile, thereby fixing a set of drawing options
-	void optionProfile(int i) {m_optionProfile = i;}
-
-	//! Set alignment option
-	void align(bool b) {m_align = b;}
-
-	//! Set scaling compaction
-	void scaling(bool b) {m_useScalingCompaction = b;}
+	//! Selects if scaling is used in the compaction phase.
+	void scaling(bool b) { m_useScalingCompaction = b; }
 
 	//! Set bound on the number of bends
-	void setBendBound(int i) { OGDF_ASSERT(i >= 0); m_bendBound = i; }
+	void bendBound(int i) {
+		if(i >= 0) m_bendBound = i;
+	}
 
-	//in planarlayout
-	//enum LayoutOptions {umloptAlignment = 1, optScaling = 2, optProgressive = 4}
-	//set generic options by setting field bits,
-	//necessary to allow setting over base class pointer
-	//bit 0 = alignment
-	//bit 1 = scaling
-	//bit 2 = progressive/traditional
-	//=> 0 is standard
-	virtual void setOptions(int optionField)
-	{
-		if (optionField & umlOpAlign) m_align = true;
-		else m_align = false;
-		if (optionField & umlOpScale) m_useScalingCompaction = true;
-		else m_useScalingCompaction = false;
-		if (optionField & umlOpProg) m_orthoStyle = 1;
-		else m_orthoStyle = 0; //traditional
-	}//setOptions
-
-	virtual int getOptions()
-	{
-		int result = 0;
-		if (m_align) result = umlOpAlign;
-		if (m_useScalingCompaction) result += umlOpScale;
-		if (m_orthoStyle == 1) result += umlOpProg;
-
-		return result;
-	}//getOptions
-
-
-protected:
-	void classifyEdges(PlanRepUML &PG, adjEntry &adjExternal);
+	//! @}
 
 private:
 	// compute bounding box and move final drawing such that it is 0 aligned
 	// respecting margins
-	void computeBoundingBox(const PlanRepUML &PG, Layout &drawing);
-
+	void computeBoundingBox(const PlanRep &PG, Layout &drawing);
 
 	// options
-	double m_separation;
-	double m_cOverhang;
-	double m_margin;
-	OrthoDir m_preferedDir;
-	int m_optionProfile;
-	int m_costAssoc;
-	int m_costGen;
-	//align merger sons on same level
-	bool m_align;
-	//settings for scaling compaction
-	bool m_useScalingCompaction;
-	int m_scalingSteps;
-	//mainly used for OrthoShaper traditional/progressive
-	int m_orthoStyle;
-	int m_bendBound; //!< bounds number of bends per edge in ortho shaper
+
+	double m_separation;	//!< minimum distance between obkects
+	double m_cOverhang;		//!< distance to corner (relative to node size)
+	double m_margin;		//!< margin around drawing
+
+	bool m_progressive; //!< use progressive ortho style (prefer 180 degree angles on deg-2 vertices).
+	int m_bendBound;	//!< bounds the number of bends per edge in ortho shaper
+
+	bool m_useScalingCompaction;	//!< use scaling for compaction
+	int m_scalingSteps;				//!< number of scaling steps (NOT REALLY USED!)
 };
 
 

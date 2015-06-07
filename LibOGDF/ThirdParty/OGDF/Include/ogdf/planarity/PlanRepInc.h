@@ -1,9 +1,9 @@
 /*
- * $Revision: 2523 $
+ * $Revision: 3188 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-02 20:59:27 +0200 (Mon, 02 Jul 2012) $
+ *   $Date: 2013-01-10 09:53:32 +0100 (Thu, 10 Jan 2013) $
  ***************************************************************/
 
 /** \file
@@ -57,8 +57,8 @@
 
 
 #include <ogdf/planarity/PlanRep.h>
-#include <ogdf/planarity/PlanRepUML.h>
-#include <ogdf/basic/UMLGraph.h>
+#include <ogdf/uml/PlanRepUML.h>
+#include <ogdf/uml/UMLGraph.h>
 #include <ogdf/basic/GraphAttributes.h>
 #include <ogdf/basic/GraphObserver.h>
 #include <ogdf/basic/Array2D.h>

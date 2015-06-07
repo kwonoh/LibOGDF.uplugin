@@ -1,9 +1,9 @@
 /*
- * $Revision: 2583 $
+ * $Revision: 3432 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-12 01:02:21 +0200 (Do, 12. Jul 2012) $
+ *   $Date: 2013-04-22 12:20:23 +0200 (Mon, 22 Apr 2013) $
  ***************************************************************/
 
 /** \file
@@ -371,16 +371,9 @@ public:
 	//! Calls the algorithm for clustered graph \a GA and returns the layout information in \a AG.
 	//! Models cluster by simple edge length adaption based on least common ancestor
 	//! cluster of end vertices.
-
-#if defined(__APPLE__)
-#	pragma clang diagnostic push
-#	pragma clang diagnostic ignored "-Woverloaded-virtual"
-#elif defined(_WIN32)
-#	pragma warning( push )
-#	pragma warning( disable : 4263 )
-#	pragma warning( disable : 4264 )
-#endif
 	void call(ClusterGraphAttributes &GA);
+
+	void call(GraphAttributes &GA, GraphConstraints & GC) { call(GA); }
 
 	//! Extended algorithm call: Allows to pass desired lengths of the edges.
 	/**
@@ -410,11 +403,6 @@ public:
 		GraphAttributes &AG,   //graph and layout
 		const EdgeArray<double> &edgeLength, //factor for desired edge lengths
 		char* ps_file);
-#if defined(__APPLE__)
-#	pragma clang diagnostic pop
-#elif defined(_WIN32)
-#	pragma warning( pop )
-#endif
 
 	/** @}
 	 *  @name Further information.

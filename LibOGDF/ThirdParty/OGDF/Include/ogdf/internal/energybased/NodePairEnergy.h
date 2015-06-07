@@ -1,9 +1,9 @@
 /*
- * $Revision: 2523 $
+ * $Revision: 3931 $
  *
  * last checkin:
- *   $Author: gutwenger $
- *   $Date: 2012-07-02 20:59:27 +0200 (Mon, 02 Jul 2012) $
+ *   $Author: beyer $
+ *   $Date: 2014-02-20 14:56:42 +0100 (Thu, 20 Feb 2014) $
  ***************************************************************/
 
 /** \file
@@ -51,7 +51,7 @@
 #define OGDF_NODE_PAIR_ENERGY_H
 
 
-#include <ogdf/internal/energybased/AdjacencyOracle.h>
+#include <ogdf/basic/AdjacencyOracle.h>
 #include <ogdf/internal/energybased/EnergyFunction.h>
 #include <ogdf/internal/energybased/IntersectionRectangle.h>
 
@@ -61,19 +61,28 @@ namespace ogdf {
 class NodePairEnergy: public EnergyFunction {
 public:
 	//Initializes data dtructures to speed up later computations
-	NodePairEnergy(const String energyname, GraphAttributes &AG);
-	virtual ~NodePairEnergy() {delete m_nodeNums; delete m_pairEnergy;}
+	NodePairEnergy(const string energyname, GraphAttributes &AG);
+
+	virtual ~NodePairEnergy() {
+		delete m_nodeNums;
+		delete m_pairEnergy;
+	}
+
 	//computes the energy of the initial layout
 	void computeEnergy();
+
 protected:
 	//computes the energy stored by a pair of vertices at the given positions
 	virtual double computeCoordEnergy(node, node, const DPoint&, const DPoint&) const = 0;
+
 	//returns the internal number given to each vertex
 	int nodeNum(node v) const { return (*m_nodeNums)[v]; }
+
 	//returns true in constant time if two vertices are adjacent
-	bool adjacent(const node v, const node w) const {return m_adjacentOracle.adjacent(v,w);}
+	bool adjacent(const node v, const node w) const { return m_adjacentOracle.adjacent(v,w); }
+
 	//returns the shape of a vertex as an IntersectionRectangle
-	const IntersectionRectangle& shape(const node v) const {return m_shape[v];}
+	const IntersectionRectangle& shape(const node v) const { return m_shape[v]; }
 
 #ifdef OGDF_DEBUG
 	virtual void printInternalData() const;
@@ -88,14 +97,17 @@ private:
 	//an IntersectionRectangle
 	List<node> m_nonIsolated;//list of vertices with degree greater zero
 	const AdjacencyOracle m_adjacentOracle;//structure for constant time adjacency queries
+
 	//function computes energy stored in a certain pair of vertices
 	double computePairEnergy(const node v, const node w) const;
+
 	//computes energy of whole layout if new position of the candidate vertex is chosen
 	void compCandEnergy();
+
 	//If a candidate change is chosen as the new position, this function sets the
 	//internal data accordingly
 	void internalCandidateTaken();
-	};
+};
 
 
 }// namespace ogdf

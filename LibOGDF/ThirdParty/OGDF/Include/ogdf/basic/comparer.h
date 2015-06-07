@@ -1,9 +1,9 @@
 /*
- * $Revision: 2564 $
+ * $Revision: 3851 $
  *
  * last checkin:
- *   $Author: gutwenger $
- *   $Date: 2012-07-07 00:03:48 +0200 (Sa, 07. Jul 2012) $
+ *   $Author: klein $
+ *   $Date: 2013-11-20 07:26:56 +0100 (Wed, 20 Nov 2013) $
  ***************************************************************/
 
 /** \file
@@ -48,10 +48,12 @@
 #ifndef OGDF_COMPARER_H
 #define OGDF_COMPARER_H
 
+#include <ogdf/basic/basic.h>
+
 namespace ogdf {
 
 //--------------------------------------------------------------------
-// A comparer interface is has to define
+// A comparer interface has to define
 // bool less (const E &x, const E &y);
 // bool leq  (const E &x, const E &y);
 // bool equal(const E &x, const E &y);
@@ -99,6 +101,7 @@ public:
 		static bool equal  (const type &x, const type &y) { return x == y; } \
 	};
 
+OGDF_STD_COMPARER(short)
 OGDF_STD_COMPARER(int)
 OGDF_STD_COMPARER(float)
 OGDF_STD_COMPARER(double)
@@ -279,6 +282,70 @@ public:
 		return compare(x,y) == 0;
 	}
 }; // class VComparer
+
+
+//! Augments any data elements of type \a X with keys of type \a Priority. This class is also its own Comparer
+/**
+ * Also defines comparator function using the keys.
+ * This class is intended as a helpful convenience class for using with BinaryHeapSimple, Top10Heap,..
+ */
+ template<class X, class Priority=double>
+ class Prioritized {
+
+	 X x;
+	 Priority p;
+
+ public:
+	 //! Constructor of empty element. Be careful!
+	 Prioritized() : x(0), p(0) { }
+
+	 //! Constructor using a key/value pair
+	 Prioritized(X xt, Priority pt) : x(xt),p(pt) { }
+
+	 //! Copy-constructor
+	 Prioritized(const Prioritized& P) : x(P.x),p(P.p) { }
+
+	 //! Returns the key of the element
+	 Priority priority() const { return p; }
+
+	 //! Returns the data of the element
+	 X item() const { return x;}
+
+	 //! Sets priority
+	 void setPriority(Priority pp) { p = pp; }
+
+	 //! Sets value x
+	 void setItem(X item) { x=item; }
+
+	 //! Comparison oprator based on the compare-operator for the key type (\a Priority)
+	 bool operator<(const Prioritized<X,Priority>& P) const { return p<P.p; }
+
+	 //! Comparison oprator based on the compare-operator for the key type (\a Priority)
+	 bool operator<=(const Prioritized<X,Priority>& P) const { return p<=P.p; }
+
+	 //! Comparison oprator based on the compare-operator for the key type (\a Priority)
+	 bool operator>(const Prioritized<X,Priority>& P) const { return p>P.p; }
+
+	 //! Comparison oprator based on the compare-operator for the key type (\a Priority)
+	 bool operator>=(const Prioritized<X,Priority>& P) const { return p>=P.p; }
+
+	 //! Comparison oprator based on the compare-operator for the key type (\a Priority)
+	 bool operator==(const Prioritized<X,Priority>& P) const { return p==P.p; }
+
+	 //! Comparison oprator based on the compare-operator for the key type (\a Priority)
+	 bool operator!=(const Prioritized<X,Priority>& P) const { return p!=P.p; }
+ };
+
+template<class X, class Priority> class StdComparer< Prioritized<X,Priority> >
+{
+public:
+	static bool less   (const Prioritized<X,Priority> &x, const Prioritized<X,Priority> &y) { return x <  y; }
+	static bool leq    (const Prioritized<X,Priority> &x, const Prioritized<X,Priority> &y) { return x <= y; }
+	static bool greater(const Prioritized<X,Priority> &x, const Prioritized<X,Priority> &y) { return x >  y; }
+	static bool geq    (const Prioritized<X,Priority> &x, const Prioritized<X,Priority> &y) { return x >= y; }
+	static bool equal  (const Prioritized<X,Priority> &x, const Prioritized<X,Priority> &y) { return x == y; }
+};
+
 
 } //namespace
 

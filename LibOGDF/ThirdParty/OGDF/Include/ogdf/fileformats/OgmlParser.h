@@ -1,9 +1,9 @@
 /*
- * $Revision: 2523 $
+ * $Revision: 4015 $
  *
  * last checkin:
- *   $Author: gutwenger $
- *   $Date: 2012-07-02 20:59:27 +0200 (Mon, 02 Jul 2012) $
+ *   $Author: beyer $
+ *   $Date: 2014-03-30 05:25:44 +0200 (Sun, 30 Mar 2014) $
  ***************************************************************/
 
 /** \file
@@ -53,9 +53,8 @@
 #define OGDF_OGML_PARSER_H
 
 #include <ogdf/fileformats/Ogml.h>
-#include <ogdf/fileformats/DinoXmlParser.h>
+#include <ogdf/fileformats/XmlParser.h>
 #include <ogdf/basic/Hashing.h>
-#include <ogdf/basic/String.h>
 #include <ogdf/cluster/ClusterGraph.h>
 #include <ogdf/cluster/ClusterGraphAttributes.h>
 
@@ -93,13 +92,14 @@ private:
 	static Hashing<int, OgmlAttribute>      *s_attributes; //!< Hashtable for saving all ogml attributes.
 	static Hashing<int, OgmlAttributeValue> *s_attValues;  //!< Hashtable for saving all values of ogml attributes.
 
+	enum Mode { compMode = 0, choiceMode, optMode };
 
 	//! Builds hashtables for tags and attributes.
 	static void buildHashTables();
 
 	mutable Ogml::GraphType m_graphType; //!< Saves a graph type. Is set by checkGraphType.
 
-	Hashing<String, const XmlTagObject*> m_ids; //!< Saves all ids of an ogml-file.
+	Hashing<string, const XmlTagObject*> m_ids; //!< Saves all ids of an ogml-file.
 
 	/**
 	 * Checks if all tags (XmlTagObject), their attributes (XmlAttributeObject) and
@@ -129,7 +129,7 @@ private:
 	 * recTag is the tag for recursive calls
 	 * returns false if something goes wrong
 	 */
-	//bool getXmlTagObjectById(XmlTagObject *recTag, String id, XmlTagObject *&xmlTag);
+	//bool getXmlTagObjectById(XmlTagObject *recTag, string id, XmlTagObject *&xmlTag);
 
 	/**
 	 * Checks the graph type and stores it in the member variable m_graphType
@@ -150,18 +150,18 @@ private:
 	// id hash tables
 	// required variables for building
 	// hash table with id from file and node
-	Hashing<String, node> m_nodes;
-	Hashing<String, edge> m_edges;
-	Hashing<String, cluster> m_clusters;
+	Hashing<string, node> m_nodes;
+	Hashing<string, edge> m_edges;
+	Hashing<string, cluster> m_clusters;
 	// hash table for bend-points
-	Hashing<String, DPoint> m_points;
+	Hashing<string, DPoint> m_points;
 
 	// hash table for checking uniqueness of ids
 	// (key:) int = id in the created graph
-	// (info:) String = id in the ogml file
-	Hashing<int, String> m_nodeIds;
-	Hashing<int, String> m_edgeIds;
-	Hashing<int, String> m_clusterIds;
+	// (info:) string = id in the ogml file
+	Hashing<int, string> m_nodeIds;
+	Hashing<int, string> m_edgeIds;
+	Hashing<int, string> m_clusterIds;
 
 	// build methods
 
@@ -182,15 +182,17 @@ private:
 		ClusterGraph &CG);
 
 	//! Build a cluster graph with style/layout attributes.
-	bool buildAttributedClusterGraph(
+	bool addAttributes(
 		Graph &G,
-		ClusterGraphAttributes &CGA,
+		GraphAttributes &GA,
+		ClusterGraphAttributes *pCGA,
 		const XmlTagObject *root);
 
-	//! Method for setting labels of clusters.
+	//! Recursive method for setting labels of clusters and nodes.
 	bool setLabelsRecursive(
 		Graph &G,
-		ClusterGraphAttributes &CGA,
+		GraphAttributes &GA,
+		ClusterGraphAttributes *pCGA,
 		XmlTagObject *root);
 
 	// helping pointer for constraints-loading
@@ -200,85 +202,113 @@ private:
 
 	// hashing lists for templates
 	//  string = id
-	Hashing<String, OgmlNodeTemplate*> m_ogmlNodeTemplates;
-	Hashing<String, OgmlEdgeTemplate*> m_ogmlEdgeTemplates;
-	//Hashing<String, OgmlLabelTemplate> m_ogmlLabelTemplates;
+	Hashing<string, OgmlNodeTemplate*> m_ogmlNodeTemplates;
+	Hashing<string, OgmlEdgeTemplate*> m_ogmlEdgeTemplates;
+	//Hashing<string, OgmlLabelTemplate> m_ogmlLabelTemplates;
 
 	// auxiliary methods for mapping graph attributes
 
-	//! Returns int value for the pattern.
-	int getBrushPatternAsInt(String s);
+	//! Returns fill pattern of string \a s.
+	FillPattern getFillPattern(string s);
 
 	//! Returns the shape as an integer value.
-	int getShapeAsInt(String s);
+	Shape getShape(string s);
 
 	//! Maps the OGML attribute values to corresponding GDE values.
-	String getNodeTemplateFromOgmlValue(String s);
+	string getNodeTemplateFromOgmlValue(string s);
 
 	//! Returns the line type as an integer value.
-	int getLineTypeAsInt(String s);
-
-	//! Returns the image style as an integer value.
-	int getImageStyleAsInt(String s);
-
-	//! Returns the alignment of image as an integer value.
-	int getImageAlignmentAsInt(String s);
+	StrokeType getStrokeType(string s);
 
 	// arrow style, actually a "boolean" function
 	// because it returns only 0 or 1 according to GDE
 	// sot <=> source or target
-	int getArrowStyleAsInt(String s, String sot);
+	int getArrowStyleAsInt(string s);
 
 	// the matching method to getArrowStyleAsInt
-	GraphAttributes::EdgeArrow getArrowStyle(int i);
+	EdgeArrow getArrowStyle(int i);
 
 	// function that operates on a string
 	// the input string contains "&lt;" instead of "<"
 	//  and "&gt;" instead of ">"
-	//  to disable interpreting the string as xml-tags (by DinoXmlParser)
+	//  to disable interpreting the string as xml-tags (by XmlParser)
 	// so this function substitutes  "<" for "&lt;"
-	String getLabelCaptionFromString(String str);
+	string getLabelCaptionFromString(string str);
 
 	//! Returns the integer value of the id at the end of the string (if it exists).
-	bool getIdFromString(String str, int &id);
+	bool getIdFromString(string str, int &id);
 
-	//! Validiation method.
-	void validate(const char* fileName);
+	//! Unified read method for graphs.
+	bool doRead(
+		istream &is,
+		Graph &G,
+		ClusterGraph *pCG,
+		GraphAttributes *pGA,
+		ClusterGraphAttributes *pCGA);
 
 public:
 
 	//! Constructs an OGML parser.
-	OgmlParser() { }
+	OgmlParser() {
+		// build the required hash tables (once!)
+		buildHashTables();
+	}
 
 	~OgmlParser() { }
 
 
+	//! Reads a graph \a G from file \a fileName in OGML format.
+	/**
+	 * @param is is the input stream to be parsed as OGML file.
+	 * @param G is the graph to be build from the OGML file.
+	 * @return true if succesfull, false otherwise.
+	 */
+	bool read(istream &is, Graph &G) {
+		return doRead(is, G, 0, 0, 0);
+	}
+
 	//! Reads a cluster graph \a CG from file \a fileName in OGML format.
 	/**
-	 * @param fileName is the name of the file to be parsed as OGML file.
+	 * @param is is the input stream to be parsed as OGML file.
 	 * @param G is the graph to be build from the OGML file; must be the graph associated with \a CG.
 	 * @param CG is the cluster graph to be build from the OGML file.
 	 * @return true if succesfull, false otherwise.
 	 */
-	bool read(
-		const char* fileName,
-		Graph &G,
-		ClusterGraph &CG);
+	bool read(istream &is, Graph &G, ClusterGraph &CG) {
+		return doRead(is, G, &CG, 0, 0);
+	}
 
 	//! Reads a cluster graph \a CG with attributes \a CGA from file \a fileName in OGML format.
 	/**
-	 * @param fileName is the name of the file to be parsed as OGML file.
-	 * @param G is the graph to be build from the OGML file; must be the graph associated with \a CG.
-	 * @param CG is the cluster graph to be build from the OGML file.
-	 * @param CGA are the cluster graph attributes (associated with CG) in which layout and style information are stored.
+	 * @param is is the input stream to be parsed as OGML file.
+	 * @param G is the graph to be build from the OGML file.
+	 * @param GA are the graph attributes (associated with \a G) in which layout and style information are stored.
 	 * @return true if succesfull, false otherwise.
 	 */
 	bool read(
-		const char* fileName,
+		istream &is,
+		Graph &G,
+		GraphAttributes &GA)
+	{
+		return doRead(is, G, 0, &GA, 0);
+	}
+
+	//! Reads a cluster graph \a CG with attributes \a CGA from file \a fileName in OGML format.
+	/**
+	 * @param is is the input stream to be parsed as OGML file.
+	 * @param G is the graph to be build from the OGML file; must be the graph associated with \a CG.
+	 * @param CG is the cluster graph to be build from the OGML file.
+	 * @param CGA are the cluster graph attributes (associated with \a CG) in which layout and style information are stored.
+	 * @return true if succesfull, false otherwise.
+	 */
+	bool read(
+		istream &is,
 		Graph &G,
 		ClusterGraph &CG,
-		ClusterGraphAttributes &CGA);
-
+		ClusterGraphAttributes &CGA)
+	{
+		return doRead(is, G, &CG, &CGA, &CGA);
+	}
 };//end class OGMLParser
 
 }//end namespace ogdf

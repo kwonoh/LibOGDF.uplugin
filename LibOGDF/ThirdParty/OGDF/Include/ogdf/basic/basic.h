@@ -1,9 +1,9 @@
 /*
- * $Revision: 2618 $
+ * $Revision: 4617 $
  *
  * last checkin:
- *   $Author: gutwenger $
- *   $Date: 2012-07-16 15:59:09 +0200 (Mo, 16. Jul 2012) $
+ *   $Author: beyer $
+ *   $Date: 2015-05-28 19:43:44 +0200 (Thu, 28 May 2015) $
  ***************************************************************/
 
 /** \file
@@ -61,49 +61,11 @@
  * Here, you find the library's code documentation. For more general information
  * on OGDF see http://www.ogdf.net. There, you can also find further explanations,
  * how-tos, and example code.
- *
- * The OGDF project is a cooperation between
- * - [Chair of Algorithm Engineering](http://ls11-www.cs.uni-dortmund.de/), Faculty of Computer Science, TU Dortmund, Germany
- * - [Juniorprofessorship of Algorithm Engineering](http://www.ae.uni-jena.de/), Faculty of Mathematics and Computer Science, Friedrich-Schiller-University Jena, Germany
- * - [Chair of Prof. J&uuml;nger](http://www.informatik.uni-koeln.de/ls_juenger/), Department of Computer Science, University of Cologne, Germany
- * - [University of Sydney](http://sydney.edu.au/engineering/it/), Australia
- * - [oreas GmbH](http://www.oreas.com/), Cologne, Germany
  */
 
 
-//---------------------------------------------------------
-// detection of the system
-//---------------------------------------------------------
+#include <ogdf/internal/basic/config.h>
 
-#if defined(unix) || defined(__unix__) || defined(__unix) || defined(_AIX) || defined(__APPLE__)
-#define OGDF_SYSTEM_UNIX
-#endif
-
-#if defined(__WIN32__) || defined(_WIN32) || defined(__NT__)
-#define OGDF_SYSTEM_WINDOWS
-#endif
-
-// Note: Apple OS X machines will be both OGDF_SYSTEM_UNIX and OGDF_SYSTEM_OSX
-#if defined(__APPLE__)
-#define OGDF_SYSTEM_OSX
-#endif
-
-
-#if defined(USE_COIN) || defined(OGDF_OWN_LPSOLVER)
-#define OGDF_LP_SOLVER
-#endif
-
-#if defined(USE_COIN) && !defined(COIN_OSI_CPX) && !defined(COIN_OSI_SYM) && !defined(COIN_OSI_CLP)
-#error "Compiler-flag USE_COIN requires an additional COIN_OSI_xxx-flag to choose the LP solver backend."
-#endif
-
-
-// define minimal MS runtime version for mingw32
-#if defined(__MINGW32__) && !defined(__MINGW64__)
-#ifndef __MSVCRT_VERSION__
-#define __MSVCRT_VERSION__ 0x0700
-#endif
-#endif
 
 // include windows.h on Windows systems
 #if defined(OGDF_SYSTEM_WINDOWS) || defined(__CYGWIN__)
@@ -111,9 +73,6 @@
 #define WIN32_LEAN_AND_MEAN
 #undef NOMINMAX
 #define NOMINMAX
-#ifndef _WIN32_WINNT
-#define _WIN32_WINNT 0x0500
-#endif
 #include <windows.h>
 #endif
 
@@ -188,37 +147,6 @@
 #endif
 
 
-#if defined(__CYGWIN__) || defined(__APPLE__) || defined(__sparc__)
-#define OGDF_NO_COMPILER_TLS
-#elif defined(__GNUC__)
-#if __GNUC__ < 4
-#define OGDF_NO_COMPILER_TLS
-#endif
-#endif
-
-
-//---------------------------------------------------------
-// macros for compiling OGDF as DLL
-//---------------------------------------------------------
-
-#ifdef OGDF_SYSTEM_WINDOWS
-#ifdef OGDF_DLL
-
-#ifdef OGDF_INSTALL
-#define OGDF_EXPORT __declspec(dllexport)
-#else
-#define OGDF_EXPORT __declspec(dllimport)
-#endif
-
-#else
-#define OGDF_EXPORT
-#endif
-
-#else
-#define OGDF_EXPORT
-#endif
-
-
 //---------------------------------------------------------
 // define data types with known size
 //---------------------------------------------------------
@@ -252,29 +180,18 @@ typedef unsigned long long __uint64;
 // common includes
 //---------------------------------------------------------
 
-#include <iostream>
+// stdlib
+#include <cmath>
+#include <ctime>
 #include <fstream>
 #include <algorithm>
+#include <limits>
 
-using std::ios;
-using std::istream;
-using std::ifstream;
-using std::ostream;
-using std::ofstream;
-using std::cin;
-using std::cout;
-using std::cerr;
-using std::endl;
-using std::flush;
-using std::swap;
-using std::min;
-using std::max;
-
-#include <stdio.h>
-#include <stdarg.h>
-#include <time.h>
-#include <string.h>
-#include <math.h>
+using std::ifstream;		// from <fstream>
+using std::ofstream;		// from <fstream>
+using std::min;				// from <algorithm>
+using std::max;				// from <algorithm>
+using std::numeric_limits;	// from <limits>
 
 #ifdef OGDF_SYSTEM_UNIX
 #include <stdint.h>
@@ -285,25 +202,13 @@ using std::max;
 #endif
 
 
+// ogdf
+#include <ogdf/basic/Logger.h>
 #include <ogdf/basic/exceptions.h>
+#include <ogdf/basic/System.h>
 #include <ogdf/basic/memory.h>
 #include <ogdf/basic/comparer.h>
 
-
-
-//---------------------------------------------------------
-// compiler adaptions
-//---------------------------------------------------------
-
-#ifdef _MSC_VER
-
-// disable useless warnings
-
-// missing dll-interface
-#pragma warning(disable:4251)
-#pragma warning(disable:4275)
-
-#endif
 
 
 //! The namespace for all OGDF objects.
@@ -328,13 +233,13 @@ static Initialization s_ogdfInitializer;
 #endif
 
 
-//---------------------------------------------------------
-// global basic functions
-//---------------------------------------------------------
+	/**
+	 * @name Global basic functions
+	 */
+	//@{
 
 	// forward declarations
 	template<class E> class List;
-	class OGDF_EXPORT String;
 
 
 	enum Direction { before, after };
@@ -363,13 +268,13 @@ static Initialization s_ogdfInitializer;
 	//! with mean m and standard deviation sd
 	inline double randomDoubleNormal(double m, double sd)
 	{
-		double x1, x2, y1, w, rndVal;
+		double x1, y1, w;
 
 		do {
-			rndVal = randomDouble(0,1);
+			double rndVal = randomDouble(0,1);
 			x1 = 2.0 * rndVal - 1.0;
 			rndVal = randomDouble(0,1);
-			x2 = 2.0 * rndVal - 1.0;
+			double x2 = 2.0 * rndVal - 1.0;
 			w = x1*x1 + x2*x2;
 		} while (w >= 1.0);
 
@@ -395,9 +300,19 @@ static Initialization s_ogdfInitializer;
 	template<>inline bool doDestruction<double>(const double *) { return false; }
 
 
-	//---------------------------------------------------------
-	// handling files and directories
-	//---------------------------------------------------------
+	//! Compares the two strings \a str1 and \a str2, ignoring the case of characters.
+	OGDF_EXPORT bool equalIgnoreCase(const string &str1, const string &str2);
+
+	//! Tests if \a prefix is a prefix of \a str, ignoring the case of characters.
+	OGDF_EXPORT bool prefixIgnoreCase(const string &prefix, const string &str);
+
+	//@}
+
+
+	/**
+	 * @name Files and directories
+	 */
+	//@{
 
 	//! The type of an entry in a directory.
 	enum FileType {
@@ -421,7 +336,7 @@ static Initialization s_ogdfInitializer;
 	 *  \pre \a dirName is a directory
 	 */
 	OGDF_EXPORT void getFiles(const char *dirName,
-		List<String> &files,
+		List<string> &files,
 		const char *pattern = "*");
 
 	//! Appends to \a files the list of files in directory \a dirName.
@@ -430,7 +345,7 @@ static Initialization s_ogdfInitializer;
 	 *  \pre \a dirName is a directory
 	 */
 	OGDF_EXPORT void getFilesAppend(const char *dirName,
-		List<String> &files,
+		List<string> &files,
 		const char *pattern = "*");
 
 
@@ -440,7 +355,7 @@ static Initialization s_ogdfInitializer;
 	 *  \pre \a dirName is a directory
 	 */
 	OGDF_EXPORT void getSubdirs(const char *dirName,
-		List<String> &subdirs,
+		List<string> &subdirs,
 		const char *pattern = "*");
 
 	//! Appends to \a subdirs the list of directories contained in directory \a dirName.
@@ -449,7 +364,7 @@ static Initialization s_ogdfInitializer;
 	 *  \pre \a dirName is a directory
 	 */
 	OGDF_EXPORT void getSubdirsAppend(const char *dirName,
-		List<String> &subdirs,
+		List<string> &subdirs,
 		const char *pattern = "*");
 
 
@@ -460,7 +375,7 @@ static Initialization s_ogdfInitializer;
 	 *  \pre \a dirName is a directory
 	 */
 	OGDF_EXPORT void getEntries(const char *dirName,
-		List<String> &entries,
+		List<string> &entries,
 		const char *pattern = "*");
 
 	//! Appends to \a entries the list of all entries contained in directory \a dirName.
@@ -470,7 +385,7 @@ static Initialization s_ogdfInitializer;
 	 *  \pre \a dirName is a directory
 	 */
 	OGDF_EXPORT void getEntriesAppend(const char *dirName,
-		List<String> &entries,
+		List<string> &entries,
 		const char *pattern = "*");
 
 
@@ -481,7 +396,7 @@ static Initialization s_ogdfInitializer;
 	 */
 	OGDF_EXPORT void getEntries(const char *dirName,
 		FileType t,
-		List<String> &entries,
+		List<string> &entries,
 		const char *pattern = "*");
 
 	//! Appends to \a entries the list of all entries of type \a t contained in directory \a dirName.
@@ -491,12 +406,11 @@ static Initialization s_ogdfInitializer;
 	 */
 	OGDF_EXPORT void getEntriesAppend(const char *dirName,
 		FileType t,
-		List<String> &entries,
+		List<string> &entries,
 		const char *pattern = "*");
 
-	//---------------------------------------------------------
-	// handling markup formatting
-	//---------------------------------------------------------
+	//@}
+
 
 #ifdef OGDF_DEBUG
 	/** We maintain a debug level in debug versions indicating how many
@@ -531,107 +445,239 @@ public:
 
 
 
-#if _MSC_VER >= 1400
+/**
+ * @name Atomic operations
+ */
+//@{
 
-inline int sprintf(char *buffer, size_t sizeOfBuffer, const char *format, ...)
-{
-	va_list args;
-	va_start(args, format);
+#ifdef OGDF_SYSTEM_WINDOWS
 
-	return vsprintf_s(buffer, sizeOfBuffer, format, args);
+#define OGDF_MEMORY_BARRIER MemoryBarrier()
+
+//! Atomically decrements (decreases by one) the variable to which \a pX points.
+/**
+ * @param pX points to the variable to be decremented.
+ * @return The resulting decremented value.
+ */
+inline __int32 atomicDec(__int32 volatile *pX) {
+	return (__int32)InterlockedDecrement((LONG volatile *)pX);
 }
 
-inline int vsprintf(char *buffer, size_t sizeInBytes, const char *format, va_list argptr)
-{
-	return vsprintf_s(buffer, sizeInBytes, format, argptr);
+//! Atomically decrements (decreases by one) the variable to which \a pX points.
+/**
+ * @param pX points to the variable to be decremented.
+ * @return The resulting decremented value.
+ */
+inline __int64 atomicDec(__int64 volatile *pX) {
+	return InterlockedDecrement64(pX);
 }
 
-inline int strcat(char *strDest, size_t sizeOfDest, const char *strSource)
-{
-	return (int)strcat_s(strDest, sizeOfDest, strSource);
+//! Atomically increments (increases by one) the variable to which \a pX points.
+/**
+ * @param pX points to the variable to be incremented.
+ * @return The resulting incremented value.
+ */
+inline __int32 atomicInc(__int32 volatile *pX) {
+	return (__int32)InterlockedIncrement((LONG volatile *)pX);
 }
 
-inline int strcpy(char *strDest, size_t sizeOfDest, const char *strSource)
-{
-	return (int)strcpy_s(strDest, sizeOfDest, strSource);
-}
-
-inline int strncpy(char *strDest, size_t sizeOfDest, const char *strSource, size_t count)
-{
-	return (int)strncpy_s(strDest, sizeOfDest, strSource, count);
-}
-
-inline char *strtok(char *strToken, const char *strDelimit)
-{
-	//provide a persistent context pointer for strtok_s
-	static char *context;
-	return strtok_s(strToken, strDelimit, &context);
-}
-
-#define scanf scanf_s
-#define fscanf fscanf_s
-#define sscanf sscanf_s
-
-inline FILE *fopen(const char *filename, const char *mode)
-{
-	FILE *stream;
-	if(fopen_s(&stream, filename, mode)) stream = 0;
-	return stream;
-}
-
-inline int localtime(struct tm *ptm, const time_t *timer)
-{
-	return (int)localtime_s(ptm,timer);
-}
-
-#else ///////////////////////////////////////////////////////////////////////////////
-
-inline int sprintf(char *buffer, size_t, const char *format, ...)
-{
-	va_list args;
-	va_start(args, format);
-
-	return ::vsprintf(buffer, format, args);
+//! Atomically increments (increases by one) the variable to which \a pX points.
+/**
+ * @param pX points to the variable to be incremented.
+ * @return The resulting incremented value.
+ */
+inline __int64 atomicInc(__int64 volatile *pX) {
+	return InterlockedIncrement64(pX);
 }
 
 
-inline int vsprintf(char *buffer, size_t, const char *format, va_list argptr)
-{
-	return ::vsprintf(buffer, format, argptr);
+//! Atomically sets the variable pointed to by \a pX to \a value and returns its previous value.
+/**
+ * @param pX    points to the variable to be modified.
+ * @param value is the value to which the variable is set.
+ * @return The previous value of the modified variable.
+ */
+inline __int32 atomicExchange(__int32 volatile *pX, __int32 value) {
+	return InterlockedExchange((LONG volatile *)pX, (LONG)value);
+}
+
+//! Atomically sets the variable pointed to by \a pX to \a value and returns its previous value.
+/**
+ * @param pX    points to the variable to be modified.
+ * @param value is the value to which the variable is set.
+ * @return The previous value of the modified variable.
+ */
+inline __int64 atomicExchange(__int64 volatile *pX, __int64 value) {
+	return InterlockedExchange64(pX, value);
+}
+
+//! Atomically sets the variable pointed to by \a pX to \a value and returns its previous value.
+/**
+ * @param pX    points to the variable to be modified.
+ * @param value is the value to which the variable is set.
+ * @return The previous value of the modified variable.
+ */
+template<typename T>
+inline T *atomicExchange(T * volatile *pX, T *value) {
+	return (T *)InterlockedExchangePointer((PVOID volatile *)pX, value);
 }
 
 
-inline int strcat(char *strDest, size_t, const char *strSource)
-{
-	::strcat(strDest, strSource);
-	return 0;
+#if defined(_M_AMD64)
+//! Atomically subtracts \a value from the variable to which \a pX points.
+/**
+ * @param pX    points to the variable to be modified.
+ * @param value is the value to be subtracted form the variable.
+ * @return The resulting value of the modified variable.
+ */
+inline __int32 atomicSub(__int32 volatile *pX, __int32 value) {
+	return (__int32)InterlockedAdd((LONG volatile *)pX, -value);
 }
 
-inline int strcpy(char *strDest, size_t, const char *strSource)
-{
-	::strcpy(strDest, strSource);
-	return 0;
+//! Atomically subtracts \a value from the variable to which \a pX points.
+/**
+ * @param pX    points to the variable to be modified.
+ * @param value is the value to be subtracted form the variable.
+ * @return The resulting value of the modified variable.
+ */
+inline __int64 atomicSub(__int64 volatile *pX, __int64 value) {
+	return InterlockedAdd64(pX, -value);
 }
 
-inline int strncpy(char *strDest, size_t, const char *strSource, size_t count)
-{
-	::strncpy(strDest, strSource, count);
-	return 0;
+//! Atomically adds \a value to the variable to which \a pX points.
+/**
+ * @param pX    points to the variable to be modified.
+ * @param value is the value to be added to the variable.
+ * @return The resulting value of the modified variable.
+ */
+inline __int32 atomicAdd(__int32 volatile *pX, __int32 value) {
+	return (__int32)InterlockedAdd((LONG volatile *)pX, value);
 }
 
-inline int localtime(struct tm *ptm, const time_t *timer)
-{
-	struct tm *newtime = ::localtime(timer);
-	if(newtime) {
-		*ptm = *newtime;
-		return 0;
-	}
-	return 1; // indicates error
+//! Atomically adds \a value to the variable to which \a pX points.
+/**
+ * @param pX    points to the variable to be modified.
+ * @param value is the value to be added to the variable.
+ * @return The resulting value of the modified variable.
+ */
+inline __int64 atomicAdd(__int64 volatile *pX, __int64 value) {
+	return InterlockedAdd64(pX, value);
 }
 
 #endif
 
+
+#else
+
+#define OGDF_MEMORY_BARRIER __sync_synchronize()
+
+inline __int32 atomicDec(__int32 volatile *pX) {
+	return  __sync_sub_and_fetch(pX, 1);
+}
+
+inline __int64 atomicDec(__int64 volatile *pX) {
+	return  __sync_sub_and_fetch(pX, 1);
+}
+
+inline __int32 atomicInc(__int32 volatile *pX) {
+	return  __sync_add_and_fetch(pX, 1);
+}
+
+inline __int64 atomicInc(__int64 volatile *pX) {
+	return  __sync_add_and_fetch(pX, 1);
+}
+
+inline __int32 atomicSub(__int32 volatile *pX, __int32 value) {
+	return __sync_sub_and_fetch(pX, value);
+}
+
+inline __int64 atomicSub(__int64 volatile *pX, __int64 value) {
+	return __sync_sub_and_fetch(pX, value);
+}
+
+inline __int32 atomicAdd(__int32 volatile *pX, __int32 value) {
+	return __sync_add_and_fetch(pX, value);
+}
+
+inline __int64 atomicAdd(__int64 volatile *pX, __int64 value) {
+	return __sync_add_and_fetch(pX, value);
+}
+
+inline __int32 atomicExchange(__int32 volatile *pX, __int32 value) {
+	return __sync_lock_test_and_set(pX, value);
+}
+
+inline __int64 atomicExchange(__int64 volatile *pX, __int64 value) {
+	return __sync_lock_test_and_set(pX, value);
+}
+
+template<typename T>
+inline T *atomicExchange(T * volatile *pX, T *value) {
+	return __sync_lock_test_and_set(pX, value);
+}
+
+#endif
+//@}
+
 } // end namespace ogdf
+
+
+/**
+ * @name C++11 support
+ * OGDF uses some new functions defined in the C++11 standard; if these functions are not
+ * supported by the compiler, they are be defined by OGDF.
+ */
+//@{
+
+#ifndef OGDF_HAVE_CPP11
+
+int                stoi  (const string& _Str, size_t *_Idx = 0, int _Base = 10);
+long long          stoll (const string& _Str, size_t *_Idx = 0, int _Base = 10);
+unsigned long      stoul (const string& _Str, size_t *_Idx = 0, int _Base = 10);
+unsigned long long stoull(const string& _Str, size_t *_Idx = 0, int _Base = 10);
+
+float       stof (const string& _Str, size_t *_Idx = 0);
+double      stod (const string& _Str, size_t *_Idx = 0);
+long double stold(const string& _Str, size_t *_Idx = 0);
+
+string to_string(long long _Val);
+string to_string(unsigned long long _Val);
+string to_string(long double _Val);
+
+#else
+
+using std::stoi;
+using std::stoll;
+using std::stoul;
+using std::stoull;
+
+using std::stof;
+using std::stod;
+using std::stold;
+
+using std::to_string;
+
+#endif
+
+
+#if !defined(OGDF_HAVE_CPP11) || (defined(_MSC_VER) && (_MSC_VER < 1700))
+
+inline string to_string(int           value) { return to_string( (long long)          value); }
+inline string to_string(long          value) { return to_string( (long long)          value); }
+inline string to_string(unsigned int  value) { return to_string( (unsigned long long) value); }
+inline string to_string(unsigned long value) { return to_string( (unsigned long long) value); }
+inline string to_string(float         value) { return to_string( (long double)        value); }
+inline string to_string(double        value) { return to_string( (long double)        value); }
+
+#endif
+
+// in C++11 we can directly pass a string as filename
+#ifdef OGDF_HAVE_CPP11
+#define OGDF_STRING_OPEN(filename) (filename)
+#else
+#define OGDF_STRING_OPEN(filename) (filename).c_str()
+#endif
+//@}
 
 
 #endif

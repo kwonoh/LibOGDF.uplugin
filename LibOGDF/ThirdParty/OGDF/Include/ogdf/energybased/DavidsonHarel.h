@@ -1,9 +1,9 @@
 /*
- * $Revision: 2564 $
+ * $Revision: 2641 $
  *
  * last checkin:
  *   $Author: gutwenger $
- *   $Date: 2012-07-07 00:03:48 +0200 (Sa, 07. Jul 2012) $
+ *   $Date: 2012-07-19 15:21:36 +0200 (Thu, 19 Jul 2012) $
  ***************************************************************/
 
 /** \file
@@ -75,7 +75,7 @@ public:
 	void addEnergyFunction(EnergyFunction *F, double weight);
 
 	//! Returns a list of the names of the energy functions.
-	List<String> returnEnergyFunctionNames();
+	List<string> returnEnergyFunctionNames();
 
 	//! Returns a list of the weights of the energy functions.
 	List<double> returnEnergyFunctionWeights();
