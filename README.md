@@ -7,9 +7,7 @@ Information
 ----------------------
 
 This plugin is based on OGDF 2015.05 (Baobab).
-I added `#pragma clang diagnostic ignored "-Woverloaded-virtual"` in `FMMMLayout.h` and `ClusterGraphAttributes.h` to avoid compile error on clang (OS X).
-
-Also, I built binaries with `_ITERATOR_DEBUG_LEVEL=0` and changed `Runtime Library` to `/MD`. It is required to make same code generation configurations with UE4's binaries on Windows.
+I built binaries with `_ITERATOR_DEBUG_LEVEL=0` and changed `Runtime Library` to `/MD`. It is required to make same code generation configurations with UE4's binaries on Windows.
 
 
 Supported Platform
