@@ -13,7 +13,7 @@ I built binaries with `_ITERATOR_DEBUG_LEVEL=0` and changed `Runtime Library` to
 Supported Platform
 ----------------------
 
-OS X, Windows
+Windows
 
 
 Installation
