@@ -13,14 +13,14 @@ I built binaries with `_ITERATOR_DEBUG_LEVEL=0` and changed `Runtime Library` to
 Supported Platform
 ----------------------
 
-Windows
+Windows (VS 2013, VS 2015, VS 2017)
 
 
 Installation
 ----------------------
 
 1. Copy `LibOGDF` folder to `Plugins` folder under your project directory.
-2. [Download precompiled binaries](https://www.dropbox.com/s/du8u5eivs0tvlvj/OGDF-Lib-2015.05.zip?dl=0) and extract it to `LibOGDF/ThirdParty/LibOGDF/Lib`.
+2. [Download precompiled binaries](https://www.dropbox.com/s/kzw8zr12yvegtve/OGDF-Lib-2015.05-VS13-17.zip?dl=1) and extract it to `LibOGDF/ThirdParty/LibOGDF/Lib`.
 Check your `Lib` directory, it should looks like `LibOGDF/ThirdParty/OGDF/Lib/Win32` and `LibOGDF/ThirdParty/OGDF/Lib/Win64`.
 3. Add `LibOGDF` under `PublicDependencyModuleNames` in your `*.Build.cs` file to include header files from your project.
 4. Add following code in `*.Target.cs` (not `*Editor.Target.cs`) of your project. It is required to package your project.
